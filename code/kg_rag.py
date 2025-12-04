@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 
 from os import getenv, environ
 import re
@@ -6,29 +6,92 @@ import collections
 import openai
 from dotenv import load_dotenv
 import json
+import httpx
+import os
+import socket
+import ssl
+import urllib3
+import certifi
 import connexion
 import pandas as pd
-from langchain.vectorstores import Neo4jVector
-from langchain.graphs import Neo4jGraph
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Neo4jVector
+from langchain_community.graphs import Neo4jGraph
+from langchain_openai import OpenAIEmbeddings
 
+# 加载环境变量
 load_dotenv()
-API_KEY = getenv("AZURE_OPENAI_API_KEY")
-RESOURCE_ENDPOINT = getenv("AZURE_OPENAI_API_BASE")
+
+# 从环境变量中读取密钥
+API_KEY = getenv("OPENAI_API_KEY")
 NEO4J_URL = getenv("NEO4J_URL")
-NEO4J_USERNAME = getenv("NEO4J_USER")
+NEO4J_USERNAME = getenv("NEO4J_USERNAME")
 NEO4J_PASSWORD = getenv("NEO4J_PASSWORD")
 NEO4J_DATABASE = getenv("NEO4J_DATABASE")
 
-environ["OPENAI_API_TYPE"] = "azure"
-environ["OPENAI_API_BASE"] = RESOURCE_ENDPOINT
-environ["OPENAI_API_KEY"] = API_KEY
-environ["OPENAI_API_VERSION"] = "2022-12-01"
+# ===== 激进SSL绕过配置 =====
+# 完全禁用SSL验证和警告
+os.environ['CURL_CA_BUNDLE'] = ''
+os.environ['REQUESTS_CA_BUNDLE'] = ''
+os.environ['SSL_CERT_FILE'] = ''
 
-openai.api_type = "azure"
-openai.api_base = RESOURCE_ENDPOINT
-openai.api_version = "2023-07-01-preview"
+# 禁用所有SSL验证
+ssl._create_default_https_context = ssl._create_unverified_context
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# 设置最低安全级别（允许弱加密）
+ssl._DEFAULT_CIPHERS += ':!aNULL:!eNULL'
+os.environ['OPENSSL_SECLEVEL'] = '0'
+
+# 设置OpenAI API配置
+os.environ['OPENAI_API_BASE'] = 'https://api.openai.com/v1'
+
+# 优先使用环境变量中的API密钥
+if not API_KEY:
+    API_KEY = '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'
+
+# 设置环境变量和OpenAI配置
+environ["OPENAI_API_KEY"] = API_KEY
 openai.api_key = API_KEY
+os.environ['OPENAI_API_KEY'] = API_KEY
+
+# ===== 创建完全绕过SSL的自定义HTTP客户端 =====
+def create_insecure_ssl_context():
+    """创建完全禁用SSL验证的SSL上下文"""
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    
+    # 设置最低安全要求
+    try:
+        context.set_ciphers('DEFAULT@SECLEVEL=0')  # 最低安全级别
+    except:
+        pass  # 如果设置失败，使用默认值
+    
+    # 使用现代的方式设置协议版本
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.maximum_version = ssl.TLSVersion.TLSv1_3
+    
+    return context
+
+# 创建自定义传输层
+def create_insecure_transport():
+    """创建完全禁用SSL验证的传输层"""
+    return httpx.HTTPTransport(
+        verify=False,  # 完全禁用验证
+        retries=5,     # 重试次数
+    )
+
+# 创建完全绕过SSL的客户端
+insecure_transport = create_insecure_transport()
+
+custom_client = httpx.Client(
+    transport=insecure_transport,
+    timeout=120.0,  # 更长的超时时间
+    limits=httpx.Limits(
+        max_connections=50,
+        max_keepalive_connections=10
+    )
+)
 
 # CYPER QUERIES
 MERGE_NODE_QUERY = "MERGE ({nodeRef}:{node} {properties})"

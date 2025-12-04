@@ -54,7 +54,7 @@ pip install -r requirements.txt
 ```
 2. Ensure you have a Neo4j [instance](https://neo4j.com/product/neo4j-graph-database/) up and running. You can set it up locally or use a cloud solution.
 3. Set up a GPT-4 instance. You can get access to GPT-4 via [OpenAI](https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4-gpt-4-turbo-gpt-4o-and-gpt-4o-mini) or [Azure](https://azure.microsoft.com/de-de/products/ai-services/openai-service).
-4. Configure the environment variables. Rename the .env_default file to .env and fill in the details for your Neo4j instance and GPT-4 API connection.
+4. Configure the environment variables. Rename the .env_default file to .env and fill in the details for your Neo4j instance and GPT-4 API connection.0
 
 ## Usage
 

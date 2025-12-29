@@ -1,0 +1,35 @@
+启动步骤（Linux / conda）
+
+进入项目根目录：cd /home/godwater/fmea
+激活环境（必须是这个环境）：conda activate kg-rag-fmea
+启动后端服务：python code/kg_rag.py（服务默认监听 http://127.0.0.1:8080）
+启动前检查（一次性）
+
+确认 Neo4j 可用，并在 .env 里配置了 NEO4J_URL/NEO4J_USERNAME/NEO4J_PASSWORD/NEO4J_DATABASE
+如果你用镜像站（如 gptsapi），在 .env 里配置 OPENAI_BASE_URL（或 OPENAI_API_BASE）+ OPENAI_API_KEY
+依赖安装（只在环境缺包时需要）：pip install -r requirements.txt
+启动后怎么验证接口
+
+curl -sS -X POST http://127.0.0.1:8080/api/v1/question-answer -H 'Content-Type: application/json' -d '{"question":"What is the average RPN for all failure modes"}'建图（用示例数据）：curl -sS -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph -H 'Content-Type: application/json' -d '{"path":"data/example_fmea.csv"}'
+提问：
+设置 top_k：curl -sS -X POST http://127.0.0.1:8080/api/v1/set-top_k -H 'Content-Type: application/json' -d '{"top_k":5}'
+项目自带入口/说明
+
+启动脚本参考： start.sh
+接口定义： api.yml
+说明文档： README.md
+补充提醒：你的 .env 里含有明文密钥/密码，建议不要提交到 git，并在需要时及时轮换。
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+启动环境和后端服务（python code/kg_rag.py 看到 8080 正常监听）之后，按这个顺序做就行：
+
+1.建图（把你的 FMEA CSV 灌进 Neo4j，并建立向量索引）
+示例数据：curl -sS -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph -H 'Content-Type: application/json' -d '{"path":"data/example_fmea.csv"}'
+你自己的数据：把 path 换成你的 csv 路径（相对项目根目录或绝对路径都可）
+2.提问验证（确认 RAG 流程通了）
+curl -sS -X POST http://127.0.0.1:8080/api/v1/question-answer -H 'Content-Type: application/json' -d '{"question":"What failure mode has the highest RPN?"}'
+3.需要更多/更少结果就调 top_k
+curl -sS -X POST http://127.0.0.1:8080/api/v1/set-top_k -H 'Content-Type: application/json' -d '{"top_k":5}'
+4.开始用你关心的问题做分析
+例如："Which process step has most failure modes?"、"List failure causes for Electrical short" 等

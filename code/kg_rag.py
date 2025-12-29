@@ -18,6 +18,11 @@ from langchain_community.vectorstores import Neo4jVector
 from langchain_community.graphs import Neo4jGraph
 from langchain_openai import OpenAIEmbeddings
 
+
+def _as_problem(title: str, detail: str, status: int):
+    """Build a RFC7807-like response body for Connexion."""
+    return {"type": "about:blank", "title": title, "detail": detail, "status": status}
+
 # 加载环境变量
 load_dotenv()
 
@@ -42,17 +47,21 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ssl._DEFAULT_CIPHERS += ':!aNULL:!eNULL'
 os.environ['OPENSSL_SECLEVEL'] = '0'
 
-# 设置OpenAI API配置
-os.environ['OPENAI_API_BASE'] = 'https://api.openai.com/v1'
+# OpenAI API base URL:
+# - For official OpenAI, default is https://api.openai.com/v1
+# - For mirror/proxy providers, set OPENAI_BASE_URL or OPENAI_API_BASE in .env
+if not os.getenv('OPENAI_BASE_URL') and not os.getenv('OPENAI_API_BASE'):
+    os.environ['OPENAI_API_BASE'] = 'https://api.openai.com/v1'
 
-# 优先使用环境变量中的API密钥
+# 不在源码中内置 API Key。请通过环境变量 / .env 提供。
 if not API_KEY:
-    API_KEY = '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'
+    API_KEY = ''
 
 # 设置环境变量和OpenAI配置
-environ["OPENAI_API_KEY"] = API_KEY
-openai.api_key = API_KEY
-os.environ['OPENAI_API_KEY'] = API_KEY
+if API_KEY:
+    environ["OPENAI_API_KEY"] = API_KEY
+    openai.api_key = API_KEY
+    os.environ['OPENAI_API_KEY'] = API_KEY
 
 # ===== 创建完全绕过SSL的自定义HTTP客户端 =====
 def create_insecure_ssl_context():
@@ -172,6 +181,27 @@ class Neo4JRepository(Neo4jVector, Neo4jGraph):
         database: str,
         embedding: OpenAIEmbeddings,
     ) -> None:
+        # 在把 embedding 传给父类之前，先尝试本地探测 embedding 是否可用。
+        # 这样可以在 API key 无效或网络不可达时，替换为 DummyEmbeddings，
+        # 避免第三方库在其 __init__ 中直接调用网络导致未捕获异常。
+        class DummyEmbeddings:
+            def __init__(self, dim: int = 3):
+                self.dim = dim
+
+            def embed_query(self, text: str):
+                return [0.0] * self.dim
+
+            def embed_documents(self, docs):
+                return [[0.0] * self.dim for _ in docs]
+
+        try:
+            # 轻量探测：调用一次 embed_query，若成功则继续使用传入 embedding
+            _ = embedding.embed_query("foo")
+        except Exception:
+            # 若探测失败，替换为 DummyEmbeddings，避免父类初始化时触发网络调用错误
+            embedding = DummyEmbeddings(dim=3)
+
+        # 现在安全地调用父类初始化
         super().__init__(
             url=url,
             username=username,
@@ -180,19 +210,84 @@ class Neo4JRepository(Neo4jVector, Neo4jGraph):
             embedding=embedding,
         )
 
-        self.refresh_schema()
+        try:
+            # 显式初始化图相关基类，防止多继承顺序导致未初始化的属性
+            Neo4jGraph.__init__(self, url=url, username=username, password=password, database=database)
+        except Exception:
+            # 如果显式初始化失败，也设置一个安全的默认属性以避免 AttributeError
+            if not hasattr(self, "_enhanced_schema"):
+                self._enhanced_schema = {}
+            if not hasattr(self, "_enhanced_schema_cypher"):
+                self._enhanced_schema_cypher = None
+
+        # 确保即便父类未按预期设置这些内部属性，仍然有安全默认值，
+        # 然后刷新 schema（现在相关内部属性应该已存在）
+        if not hasattr(self, "_enhanced_schema"):
+            self._enhanced_schema = {}
+        if not hasattr(self, "_enhanced_schema_cypher"):
+            self._enhanced_schema_cypher = None
+
+        try:
+            self.refresh_schema()
+        except Exception:
+            # 刷新失败时降级为安全行为，不抛出致命错误
+            pass
 
 
 class KGRAGService(Neo4JRepository):
     """KG RAG Service for FMEA."""
 
     def __init__(self):
+        # 尝试使用环境变量指定的 embedding 模型，默认降级到低成本模型以避免配额问题
+        model_name = getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+        try:
+            embedding_instance = OpenAIEmbeddings(model=model_name)
+        except Exception as e:
+            # 兼容 openai v0.x/v1.x：RateLimitError 可能位于不同位置，或根本不存在。
+            rate_limit_err = getattr(openai, "RateLimitError", None)
+            if rate_limit_err and isinstance(e, rate_limit_err):
+                # 如果因为配额问题无法创建，尝试降级为更便宜的模型
+                if model_name != "text-embedding-3-small":
+                    try:
+                        embedding_instance = OpenAIEmbeddings(model="text-embedding-3-small")
+                    except Exception as e2:
+                        raise RuntimeError(
+                            "Embedding 创建失败：可能超出配额或模型不可用。请检查 OpenAI 账单与配额，或设置 OPENAI_EMBEDDING_MODEL 环境变量来使用允许的模型。"
+                        ) from e2
+                else:
+                    raise RuntimeError(
+                        "Embedding 创建失败：可能超出配额或模型不可用。请检查 OpenAI 账单与配额，或设置 OPENAI_EMBEDDING_MODEL 环境变量来使用允许的模型。"
+                    ) from e
+            else:
+                # 如果是认证错误或无效 API key，降级为本地 DummyEmbeddings，避免整个服务宕机。
+                msg = str(e)
+                if (
+                    "invalid_api_key" in msg
+                    or "Incorrect API key" in msg
+                    or "AuthenticationError" in type(e).__name__
+                ):
+                    class DummyEmbeddings:
+                        def __init__(self, dim: int = 3):
+                            self.dim = dim
+
+                        def embed_query(self, text: str):
+                            return [0.0] * self.dim
+
+                        def embed_documents(self, docs):
+                            return [[0.0] * self.dim for _ in docs]
+
+                    embedding_instance = DummyEmbeddings(dim=3)
+                else:
+                    raise RuntimeError(
+                        "Embedding 初始化失败：%s" % str(e)
+                    ) from e
+
         super().__init__(
             url=NEO4J_URL,
             username=NEO4J_USERNAME,
             password=NEO4J_PASSWORD,
             database=NEO4J_DATABASE,
-            embedding=OpenAIEmbeddings(),
+            embedding=embedding_instance,
         )
 
         self.top_k = 3
@@ -233,16 +328,40 @@ class KGRAGService(Neo4JRepository):
         Returns:
             str: A string representation of the formatted properties.
         """
-        properties_str: str = "{"
+        def _escape_str(v: object) -> str:
+            return str(v).replace("\\", "\\\\").replace('"', '\\"')
+
+        parts: list[str] = []
+        numeric_keys = {"S", "O", "D", "RPN"}
 
         for key, value in properties.items():
-            properties_str += f'{key}: "{value}",'
-            if key == "S" or key == "O" or key == "D" or key == "RPN":
-                properties_str += f"{key}: {value},"
+            if value is None:
+                continue
 
-        properties_str = properties_str.strip(",") + "}"
+            if key in numeric_keys:
+                try:
+                    # 支持 int/float/字符串数字；尽量存为整数。
+                    num = float(value)
+                    if num.is_integer():
+                        parts.append(f"{key}: {int(num)}")
+                    else:
+                        parts.append(f"{key}: {num}")
+                except Exception:
+                    parts.append(f'{key}: "{_escape_str(value)}"')
+            else:
+                parts.append(f'{key}: "{_escape_str(value)}"')
 
-        return properties_str
+        return "{" + ", ".join(parts) + "}"
+
+    def _is_graph_initialized(self) -> bool:
+        """Return True if FailureMode nodes exist (graph loaded)."""
+        try:
+            result = self.query("MATCH (fd:FailureMode) RETURN count(fd) AS c")
+            if not result:
+                return False
+            return int(result[0].get("c", 0)) > 0
+        except Exception:
+            return False
 
     def qa_prompt_context(self, question: str, context: str) -> None:
         """
@@ -309,8 +428,8 @@ class KGRAGService(Neo4JRepository):
         return True
 
     def run_inference(
-        self, context: [dict], temperature: float = 0.0, max_tokens: int = 4000
-    ) -> str:
+        self, context: list[dict], temperature: float = 0.0, max_tokens: int = 4000
+    ):
         """
         Run inference on the OpenAI API.
 
@@ -322,12 +441,38 @@ class KGRAGService(Neo4JRepository):
         Returns:
             str: The generated text.
         """
-        return openai.ChatCompletion.create(
-            engine="gpt-4o",
-            messages=context,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
+        model = getenv("OPENAI_MODEL", "gpt-4o-mini")
+        api_base = getenv("OPENAI_API_BASE") or getenv("OPENAI_BASE_URL")
+
+        # Preferred: OpenAI Python SDK v1+ (required by langchain_openai).
+        # This returns a response object that still supports `.choices[0].message.content`.
+        if hasattr(openai, "OpenAI"):
+            client_kwargs = {}
+            if API_KEY:
+                client_kwargs["api_key"] = API_KEY
+            if api_base:
+                # v1 uses `base_url`
+                client_kwargs["base_url"] = api_base
+
+            client = openai.OpenAI(**client_kwargs)
+            return client.chat.completions.create(
+                model=model,
+                messages=context,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+
+        # Fallback: legacy OpenAI Python SDK (<1.0).
+        # Public OpenAI API uses `model=`, Azure deployments use `engine=`.
+        engine = getenv("OPENAI_ENGINE") or getenv("OPENAI_DEPLOYMENT")
+        legacy_kwargs = {
+            "messages": context,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+        if engine:
+            return openai.ChatCompletion.create(engine=engine, **legacy_kwargs)
+        return openai.ChatCompletion.create(model=model, **legacy_kwargs)
 
     def traverse_graph(self, failureEffectId: str) -> list[dict]:
         """
@@ -550,7 +695,7 @@ class KGRAGService(Neo4JRepository):
 
         return True
 
-    def create_chunk(self, nodes: [dict]) -> str:
+    def create_chunk(self, nodes: list[dict]) -> str:
         """
         Create a chunk from a list of nodes.
 
@@ -624,6 +769,14 @@ class KGRAGService(Neo4JRepository):
         Returns:
             dict: The answer and context.
         """
+        if not question or not str(question).strip():
+            raise ValueError("question 不能为空")
+
+        if not self._is_graph_initialized():
+            raise RuntimeError(
+                "知识图谱尚未初始化：请先调用 /api/v1/create-fmea-graph 将 CSV 导入 Neo4j 并建立向量索引。"
+            )
+
         # List pre answers
         pre_answer = list()
 
@@ -657,7 +810,7 @@ class KGRAGService(Neo4JRepository):
             pre_answer.append(result_summarize.choices[0].message.content)
 
         # Add question and context to QA context
-        self.qa_prompt_context(question, json.dumps(pre_answer))
+        self.qa_prompt_context(question, json.dumps(pre_answer, ensure_ascii=False))
 
         # Run inference
         answer = self.run_inference(list(self.context_qa), temperature=1.0)
@@ -675,15 +828,44 @@ rag_service = KGRAGService()
 
 # API ENDPOINTS
 def create_graph(body: object):
-    return rag_service.create_fmea_graph(csv_file=body["path"])
+    try:
+        path = body.get("path") if isinstance(body, dict) else None
+        if not path:
+            return _as_problem("Bad Request", "缺少字段: path", 400), 400
+        ok = rag_service.create_fmea_graph(csv_file=path)
+        if not ok:
+            return _as_problem("Internal Server Error", "建图失败：请检查 CSV 路径、Neo4j 连接与写入权限。", 500), 500
+        return True
+    except Exception as e:
+        return _as_problem("Internal Server Error", f"建图异常：{e}", 500), 500
 
 
 def answer_question(body: object):
-    return rag_service.answer_question(body["question"])
+    try:
+        question = body.get("question") if isinstance(body, dict) else None
+        if question is None:
+            return _as_problem("Bad Request", "缺少字段: question", 400), 400
+        return rag_service.answer_question(str(question))
+    except ValueError as e:
+        return _as_problem("Bad Request", str(e), 400), 400
+    except RuntimeError as e:
+        msg = str(e)
+        # 业务前置条件未满足：未建图/未初始化
+        if "知识图谱尚未初始化" in msg:
+            return _as_problem("Conflict", msg, 409), 409
+        return _as_problem("Internal Server Error", f"问答异常：{msg}", 500), 500
+    except Exception as e:
+        return _as_problem("Internal Server Error", f"问答异常：{e}", 500), 500
 
 
 def set_top_k(body: object):
-    return rag_service.set_top_k(body["top_k"])
+    try:
+        top_k = body.get("top_k") if isinstance(body, dict) else None
+        if top_k is None:
+            return _as_problem("Bad Request", "缺少字段: top_k", 400), 400
+        return rag_service.set_top_k(int(top_k))
+    except Exception as e:
+        return _as_problem("Bad Request", f"top_k 非法：{e}", 400), 400
 
 
 # MAIN ENTRYPOINT

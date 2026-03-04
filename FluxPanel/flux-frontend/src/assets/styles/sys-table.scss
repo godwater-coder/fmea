@@ -1,0 +1,15 @@
+#app {
+    .mytable {
+        margin-top: 10px;
+    }
+    
+    .disabled_class {
+        color: #fff;
+        background-color: #fab6b6;
+        border-color: #fab6b6;
+    }
+    
+    .disabled_class:hover {
+        cursor: not-allowed;
+    }
+}

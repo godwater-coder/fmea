@@ -1,0 +1,41 @@
+# -*- coding:utf-8 -*-
+
+from sqlalchemy import Column, ForeignKey, {{ importList }}
+from config.database import BaseMixin, Base
+{% if subTable %}
+from sqlalchemy.orm import relationship
+{% endif %}
+
+class {{ tableName|snake_to_pascal_case }}(Base, BaseMixin):
+    """
+    {{ functionName }}表
+    """
+    __tablename__ = "{{ tableName }}"
+
+    {% for column in columns %}
+    {% if not column.columnName | is_base_column %}
+    {{ column.columnName }} = Column({{ column.columnType|get_sqlalchemy_type }}, {{ column | get_column_options }})
+    {% endif %}
+    {% endfor %}
+    {% if subTable %}
+    {{ subTable.table_name }}_list = relationship('{{ subClassName }}', back_populates='{{ tableName }}')
+    {% endif %}
+
+
+{% if subTable %}
+class {{ subClassName }}(Base, BaseMixin):
+    """
+    {{ functionName }}表
+    """
+    __tablename__ = '{{ subTableName }}'
+    {% for column in subTable.columns %}
+    {% if not column.column_name | is_base_column %}
+    {{ column.column_name }} = Column({{ column.column_type | get_sqlalchemy_type }}, {% if column.column_name == subTableFkName %}ForeignKey('{{ tableName }}.id'), {% endif %}{% if column.pk %}primary_key=True, {% endif %}{% if column.increment %}autoincrement=True, {% endif %}{% if column.required %}nullable=True{% else %}nullable=False{% endif %}, comment='{{ column.column_comment }}')
+    {% endif %}
+    {% endfor %}
+
+    {% if subTable %}
+    {{ tableName }} = relationship('{{ ClassName }}', back_populates='{{ subTable.table_name }}_list')
+    {% endif %}
+{% endif %}
+

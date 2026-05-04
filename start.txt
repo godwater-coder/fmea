@@ -1,0 +1,114 @@
+启动步骤（Linux / conda）
+
+进入项目根目录：cd /home/godwater/fmea
+激活环境（必须是这个环境）：conda activate kg-rag-fmea
+启动后端服务：python code/kg_rag.py（服务默认监听 http://127.0.0.1:8080）
+启动前检查（一次性）
+
+确认 Neo4j 可用，并在 .env 里配置了 NEO4J_URL/NEO4J_USERNAME/NEO4J_PASSWORD/NEO4J_DATABASE
+如果你用镜像站（如 gptsapi），在 .env 里配置 OPENAI_BASE_URL（或 OPENAI_API_BASE）+ OPENAI_API_KEY
+依赖安装（只在环境缺包时需要）：pip install -r requirements.txt
+启动后怎么验证接口
+
+curl -sS -X POST http://127.0.0.1:8080/api/v1/question-answer -H 'Content-Type: application/json' -d '{"question":"What is the average RPN for all failure modes"}'建图（用示例数据）：curl -sS -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph -H 'Content-Type: application/json' -d '{"path":"data/example_fmea.csv"}'
+提问：
+设置 top_k：curl -sS -X POST http://127.0.0.1:8080/api/v1/set-top_k -H 'Content-Type: application/json' -d '{"top_k":5}'
+项目自带入口/说明
+
+启动脚本参考： start.sh
+接口定义： api.yml
+说明文档： README.md
+补充提醒：你的 .env 里含有明文密钥/密码，建议不要提交到 git，并在需要时及时轮换。
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+启动环境和后端服务（python code/kg_rag.py 看到 8080 正常监听）之后，按这个顺序做就行：
+
+1.建图（把你的 FMEA CSV 灌进 Neo4j，并建立向量索引）
+示例数据：
+curl -sS -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph -H 'Content-Type: application/json' -d '{"path":"data/dfmea_final.csv"}'
+你自己的数据：把 path 换成你的 csv 路径（相对项目根目录或绝对路径都可）
+2.提问验证（确认 RAG 流程通了）
+curl -sS -X POST http://127.0.0.1:8080/api/v1/question-answer -H 'Content-Type: application/json' -d '{"question":"平均RPN是多少?"}'
+3.需要更多/更少结果就调 top_k
+
+curl -sS -X POST http://127.0.0.1:8080/api/v1/set-top_k -H 'Content-Type: application/json' -d '{"top_k":5}'
+4.开始用你关心的问题做分析
+例如："Which process step has most failure modes?"、"List failure causes for Electrical short" 等
+
+当你“提问”（调用 /api/v1/question-answer）时，后端的运行链路大致分 6 步：路由→前置检查→（优先）图查询检索→（兜底）向量检索→摘要压缩→最终生成答案。
+
+1) 请求怎么进到代码里
+
+你发的 POST /api/v1/question-answer 会按 OpenAPI 配置映射到 api.yml:27-48 里的 operationId: kg_rag.answer_question
+Connexion 启动时加载这个 API 定义并把请求分发到 kg_rag.py:872-876 里注册的接口函数（同名 answer_question）
+2) 服务里有一个常驻的 RAG 实例
+
+进程启动时会创建全局单例 rag_service = KGRAGService()，它会一直常驻内存（包含 Neo4j 连接、向量检索能力、top_k、prompt 上下文等）
+见 kg_rag.py:812-818
+3) API 层拿到 question 后调用核心逻辑
+
+API handler 取出 question，然后调用 rag_service.answer_question(question)
+见 kg_rag.py:841-860
+4) 核心问答：先做前置检查
+
+空问题直接拒绝（400）
+如果 Neo4j 里还没有 FailureMode 节点，就认为“未建图”，返回 409，并提示先调用建图接口
+检查逻辑在 kg_rag.py:356-364，问答入口在 kg_rag.py:757-777
+5) 检索阶段：优先“让模型写 Cypher 去查图”，不行再用向量检索兜底
+
+(a) 让 LLM 生成 Cypher
+
+把你的问题塞进“生成 Cypher 的 prompt”上下文 context_cypher（里面还带了图 schema）
+见 kg_rag.py:383-400 与 kg_rag.py:781-799
+调用 run_inference 请求 LLM（OPENAI_MODEL 默认 gpt-4o-mini，base_url 用 OPENAI_API_BASE/OPENAI_BASE_URL）
+见 kg_rag.py:433-494
+从模型回复里提取   包起来的 Cypher，并先跑一次 validate_cypher 试执行验证
+见 code/kg_rag.py、code/kg_rag.py
+如果可用：执行该 Cypher 得到图查询结果，并按 top_k 截断
+(b) 如果 Cypher 无效或查不到结果：走向量检索
+
+调用 similarity_search(question, k=top_k)（Neo4jVector 在 Neo4j 里做向量近邻检索）
+见 code/kg_rag.py
+6) 生成阶段：先“摘要压缩检索结果”，再“用摘要回答”
+
+对每条检索结果（无论来自图查询还是向量检索），先用 ANSWER_SUMMARIZE_TEMPLATE 做一次摘要（减少噪声、方便后续回答）
+见 code/kg_rag.py、code/kg_rag.py
+把“问题 + 多条摘要”塞进最终 QA prompt（CYPHER_QA_TEMPLATE），再调用一次 run_inference 生成最终自然语言回答（temperature=1.0）
+见 code/kg_rag.py、code/kg_rag.py
+返回给前端/调用方：answer（最终答案）+ context（摘要）+ context_raw（原始检索结果）
+见 code/kg_rag.py
+补充：你之前“建图”做了什么，为什么后面能向量检索
+
+建图接口把 CSV 每行 MERGE 成 5 类节点 + 4 类关系，然后为每个 FailureMode 生成一段“chunk 文本”，写入 Neo4j 的向量索引，并把 FailureMode 与 Chunk 用 :isIndexed 关系连起来，供 similarity_search 使用
+见 code/kg_rag.py
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+训练是谁做的？
+
+大模型（比如你这里默认 OPENAI_MODEL=gpt-4o-mini）是在 OpenAI（或你配置的 OPENAI_API_BASE/OPENAI_BASE_URL 服务方）那边提前训练好的。
+你每次调用只是“推理/生成”（inference），输入 prompt，模型输出回答。
+
+你的数据起什么作用？
+
+你的 FMEA CSV 数据被你“建图”写进 Neo4j，并建立向量索引。
+提问时程序先去 Neo4j 检索相关内容（图查询或向量相似检索），把检索到的内容拼进 prompt，发给大模型，让它“基于检索到的上下文”生成答案。
+这叫 RAG（检索增强生成）：用数据做“外部知识库”，不是用数据去训练/微调模型。
+什么时候才算“训练/微调”？
+
+如果你要让模型长期学会某种风格/规则/领域知识，一般需要**微调（fine-tuning）**或其它训练方式（这套代码目前没做）。
+你现在做的是“把最新数据喂给模型作为上下文”，所以数据更新后无需训练，只要重建图/索引即可。
+
+
+
+这套系统的工作流程可以概括为以下几个核心步骤：
+提问：用户提出一个关于FMEA的专业问题（例如，“某型号电池的潜在失效模式有哪些？”）。
+检索：系统不会直接把整个知识图谱扔给大模型。相反，它先用用户的问题去检索知识图谱（特别是其向量嵌入库），找到与问题最相关的几段信息（即“知识片段”或“上下文”）。
+增强：系统将检索到的相关FMEA知识和用户的原始问题组合在一起，形成一个新的、更丰富的提示词。
+生成：这个组合好的提示词被发送给通用的、未经FMEA专门训练的大模型（如GPT-4）。大模型基于这个“被知识增强过的”提示词来生成回答。
+
+cd FluxPanel/flux-frontend/
+npm run dev -- --port 5173 --
+
+http://localhost:5173/#/fmea-qa

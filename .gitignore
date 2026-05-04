@@ -1,0 +1,56 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Mac
+.DS_Store
+
+# Nested git backups (local)
+**/.git.bak_*/
+
+# VSCode
+.vscode/
+
+# JetBrains
+.idea/
+
+# Environment
+.env
+
+# Ruff
+.ruff_cache/
+
+# Node / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Frontend build output
+dist/
+build/
+.vite/
+.cache/
+
+rest_api.http
+# Local-only ignore (repo will only commit selected files)
+**/node_modules/
+**/.vite/
+**/dist/
+**/build/

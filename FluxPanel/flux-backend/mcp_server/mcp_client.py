@@ -18,9 +18,15 @@ class MCPClient:
     def __init__(self):
         """初始化 MCP 客户端"""
         self.exit_stack = AsyncExitStack()
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")  # 读取 OpenAI API Key
-        self.base_url = os.getenv("OPENAI_API_URL")  # 读取 BASE YRL
-        self.model = os.getenv("OPENAI_API_MODEL")  # 读取 model
+        self.openai_api_key = os.getenv("OPENAI_API_KEY") or os.getenv("OLLAMA_API_KEY") or "ollama"
+        self.base_url = (
+            os.getenv("OLLAMA_API_BASE")
+            or os.getenv("OPENAI_API_URL")
+            or os.getenv("OPENAI_API_BASE")
+            or os.getenv("OPENAI_BASE_URL")
+            or "http://127.0.0.1:11434/v1"
+        )
+        self.model = os.getenv("OLLAMA_MODEL") or os.getenv("OPENAI_API_MODEL") or os.getenv("OPENAI_MODEL") or "qwen3.6:7b"
         if not self.openai_api_key:
             raise ValueError("❌ 未找到 OpenAI API Key，请在 .env 文件中设置 OPENAI_API_KEY")
         self.client = AsyncOpenAI(api_key=self.openai_api_key, base_url=self.base_url)  # 创建OpenAI client
@@ -170,7 +176,7 @@ class MCPClient:
         return
 
     async def put_query(self, query: str):
-        print(f"\n🤖 OpenAI: ", end="", flush=True)
+        print(f"\n🤖 Ollama: ", end="", flush=True)
         response = self.process_query(query)  # 发送用户输入到 OpenAI API
         async for value in response:
             print(value, end="", flush=True)
@@ -187,7 +193,7 @@ class MCPClient:
                     break
 
 
-                print(f"\n🤖 OpenAI: ", end="", flush=True)
+                print(f"\n🤖 Ollama: ", end="", flush=True)
                 response = self.process_query(query)  # 发送用户输入到 OpenAI API
                 async for value in response:
                     print(value, end="", flush=True)

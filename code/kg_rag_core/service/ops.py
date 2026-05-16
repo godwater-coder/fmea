@@ -12,13 +12,12 @@ import json
 import os
 from pathlib import Path
 import pandas as pd
-from langchain_openai import OpenAIEmbeddings
 import graph_building
 
 from synonyms import CSV_COLUMN_SYNONYMS, PROCESS_STEP_SUFFIX_PATTERN
 
 from ..settings import (
-    API_KEY,
+    OLLAMA_API_KEY,
     NEO4J_URL,
     NEO4J_USERNAME,
     NEO4J_PASSWORD,
@@ -562,7 +561,7 @@ class ServiceOpsMixin:
             pre_answer.append(result_summarize.choices[0].message.content)
 
         self.qa_prompt_context(question_original, json.dumps(pre_answer, ensure_ascii=False))
-        qa_temp_raw = (getenv("OPENAI_QA_TEMPERATURE", "0") or "0").strip()
+        qa_temp_raw = (getenv("OLLAMA_QA_TEMPERATURE", "0") or "0").strip()
         try:
             qa_temp = float(qa_temp_raw)
         except Exception:
@@ -579,13 +578,14 @@ class ServiceOpsMixin:
             "context_raw": query_result,
         }
 
-    # 最关键的“直接调用大模型 API”的函数：它把 messages=context 发给 OpenAI，然后把模型返回的补全结果对象原样返回。
-    # 参数：context(list[dict])、temperature(float)、max_tokens(int)；返回：OpenAI 聊天补全结果对象；功能：调用 OpenAI 接口让模型基于上下文生成内容。
+    # 最关键的“直接调用大模型 API”的函数：它把 messages=context 发给 Ollama 的 OpenAI 兼容接口，
+    # 默认指向本地 Ollama，再把模型返回的补全结果对象原样返回。
+    # 参数：context(list[dict])、temperature(float)、max_tokens(int)；返回：聊天补全结果对象；功能：调用 LLM 接口让模型基于上下文生成内容。
     def run_inference(
         self, context: list[dict], temperature: float = 0.0, max_tokens: int = 4000
     ):
         """
-        调用 OpenAI 接口进行推理（生成回复）。
+        调用 Ollama 兼容接口进行推理。
 
         Args:
             context (list): 消息上下文列表（每项为 dict，包含 role/content 等字段）。
@@ -593,17 +593,21 @@ class ServiceOpsMixin:
             max_tokens (int): 最大生成 token 数。
 
         Returns:
-            object: OpenAI 聊天补全结果对象（可通过 choices[0].message.content 取文本）。
+            object: 聊天补全结果对象（可通过 choices[0].message.content 取文本）。
         """
-        model = getenv("OPENAI_MODEL", "gpt-4o-mini")
-        api_base = getenv("OPENAI_API_BASE") or getenv("OPENAI_BASE_URL")
+        model = getenv("OLLAMA_MODEL", "qwen3.6:27b")
+        api_base = (
+            getenv("OLLAMA_API_BASE")
+            or getenv("OLLAMA_BASE_URL")
+            or "http://127.0.0.1:11434/v1"
+        )
 
-        # 优先使用：OpenAI Python SDK v1+（langchain_openai 依赖该版本）。
+        # 优先使用：OpenAI Python SDK v1+，通过兼容接口访问本地 Ollama。
         # 返回的是响应对象，仍可通过 `.choices[0].message.content` 读取生成文本。
         if hasattr(openai, "OpenAI"):
             client_kwargs = {}
-            if API_KEY:
-                client_kwargs["api_key"] = API_KEY
+            if OLLAMA_API_KEY:
+                client_kwargs["api_key"] = OLLAMA_API_KEY
             if api_base:
                 # v1 版本使用参数名 `base_url`
                 client_kwargs["base_url"] = api_base
@@ -617,8 +621,7 @@ class ServiceOpsMixin:
             )
 
         # 兜底方案：旧版 OpenAI Python SDK（<1.0）。
-        # 公有 OpenAI 一般用 `model=`；Azure OpenAI 部署通常用 `engine=`。
-        engine = getenv("OPENAI_ENGINE") or getenv("OPENAI_DEPLOYMENT")
+        engine = getenv("OLLAMA_ENGINE")
         legacy_kwargs = {
             "messages": context,
             "temperature": temperature,
@@ -854,4 +857,3 @@ class ServiceOpsMixin:
                 safe = str(v).replace("\\", "\\\\").replace("'", "\\'")
                 rendered = rendered.replace("$" + k, "'" + safe + "'")
             return self.query(rendered)
-

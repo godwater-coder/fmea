@@ -3,9 +3,9 @@
 # 该文件实现 Neo4j 仓储层，封装图查询与向量检索基础能力。
 
 from os import getenv
+from typing import Any
 from langchain_community.vectorstores import Neo4jVector
 from langchain_community.graphs import Neo4jGraph
-from langchain_openai import OpenAIEmbeddings
 
 
 class Neo4JRepository(Neo4jVector, Neo4jGraph):
@@ -19,7 +19,7 @@ class Neo4JRepository(Neo4jVector, Neo4jGraph):
         username: str,
         password: str,
         database: str,
-        embedding: OpenAIEmbeddings,
+        embedding: Any,
     ) -> None: #返回值类型标注，返回NONE
         # 在把 embedding 传给父类之前，先尝试本地探测 embedding 是否可用。
         # 这样可以在 API key 无效或网络不可达时，替换为 DummyEmbeddings，
@@ -76,4 +76,3 @@ class Neo4JRepository(Neo4jVector, Neo4jGraph):
             pass
 
 # ------------------------------------------------------------------------------------------------------------------
-

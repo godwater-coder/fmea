@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# 该文件集中管理环境变量读取、OpenAI 配置以及提示词模板常量。
+# 该文件集中管理环境变量读取、Ollama 配置以及提示词模板常量。
 
-from os import getenv, environ
-import openai
+from os import getenv
 import os
 from dotenv import load_dotenv
 
@@ -12,28 +11,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 从环境变量中读取密钥
-API_KEY = getenv("OPENAI_API_KEY")
+OLLAMA_BASE_URL = getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+OLLAMA_API_BASE = getenv("OLLAMA_API_BASE") or f"{OLLAMA_BASE_URL.rstrip('/')}/v1"
+OLLAMA_MODEL = getenv("OLLAMA_MODEL", "qwen3.6:27b")
+OLLAMA_EMBEDDING_MODEL = getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
+OLLAMA_API_KEY = getenv("OLLAMA_API_KEY") or "ollama"
 NEO4J_URL = getenv("NEO4J_URL")
 NEO4J_USERNAME = getenv("NEO4J_USERNAME")
 NEO4J_PASSWORD = getenv("NEO4J_PASSWORD")
 NEO4J_DATABASE = getenv("NEO4J_DATABASE")
-
-# OpenAI 接口基地址：
-# - 官方 OpenAI 默认地址：https://api.openai.com/v1
-# - 镜像/代理服务可在 .env 设置 OPENAI_BASE_URL 或 OPENAI_API_BASE
-if not os.getenv('OPENAI_BASE_URL') and not os.getenv('OPENAI_API_BASE'):
-    os.environ['OPENAI_API_BASE'] = 'https://api.openai.com/v1'
-
-# 不在源码中内置 API Key。请通过环境变量 / .env 提供。
-if not API_KEY:
-    API_KEY = ''
-
-# 设置环境变量和OpenAI配置
-if API_KEY:
-    environ["OPENAI_API_KEY"] = API_KEY
-    openai.api_key = API_KEY
-    os.environ['OPENAI_API_KEY'] = API_KEY
-
 
 # 推理模板常量
 CYPHER_GENERATION_TEMPLATE = """

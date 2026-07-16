@@ -98,8 +98,7 @@ class DeterministicControlsPresenceMixin:
         if "失效模式" not in q or "预防" not in q or "探测" not in q:
             return None
 
-        # 重要：这里不要回退到 FailureCause->FailureMeasure。
-        # 旧图中措施挂在原因上且可能跨模式共享，会让模式级统计失真。
+        # 只统计失效模式主节点上的标准控制字段，避免跨节点推断造成失真。
         schema_rows = self._query_params(
             """
             MATCH (fd:FailureMode)
@@ -258,22 +257,7 @@ class DeterministicControlsPresenceMixin:
         modes = [str(r.get("FailureMode") or "").strip() for r in rows_modes]
         modes = [m for m in modes if m]
         if not modes:
-            # 旧图回退：从 FailureMeasure 混合文本中推断
-            rows2 = self._query_params(
-                """
-                MATCH (fd:FailureMode)-[:isDueToFailureCause]->(:FailureCause)-[:isImprovedByFailureMeasure]->(fm:FailureMeasure)
-                WHERE fm.FailureMeasure IS NOT NULL
-                  AND toString(fm.FailureMeasure) CONTAINS '预防控制：'
-                  AND toString(fm.FailureMeasure) CONTAINS '提高防护等级'
-                RETURN DISTINCT fd.FailureMode AS FailureMode
-                ORDER BY FailureMode
-                """.strip(),
-                {},
-            )
-            modes = [str(r.get("FailureMode") or "").strip() for r in rows2]
-            modes = [m for m in modes if m]
-            if not modes:
-                return None
+            return None
 
         threats: list[str] = []
         blob = " ".join(modes)

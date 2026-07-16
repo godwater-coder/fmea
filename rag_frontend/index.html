@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FMEA 风险智能台 · KG-RAG Console</title>
+    <meta name="description" content="知识图谱增强的 DFMEA 检索问答工作台">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%234f46e5' d='M16 2l12 7v14l-12 7L4 23V9z'/%3E%3C/svg%3E">
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- ============ Sidebar ============ -->
+        <aside class="sidebar" id="sidebar" aria-label="导航">
+            <div class="sidebar__top">
+                <div class="brand">
+                    <span class="brand__mark" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2.6l11.6 6.7v13.4L16 29.4 4.4 22.7V9.3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="16" r="3.1" fill="currentColor"/><circle cx="16" cy="6.6" r="1.7" fill="currentColor"/><circle cx="24" cy="21" r="1.7" fill="currentColor"/><circle cx="8" cy="21" r="1.7" fill="currentColor"/><path d="M16 9.7v3.2M18.6 17.6l3 2.1M13.4 17.6l-3 2.1" stroke="currentColor" stroke-width="1.4"/></svg>
+                    </span>
+                    <span class="brand__text">
+                        <strong>FMEA 风险智能台</strong>
+                        <em>KG-RAG Console</em>
+                    </span>
+                </div>
+                <button class="icon-btn icon-btn--ghost sidebar__collapse" id="collapseSidebarBtn" type="button" title="折叠侧栏" aria-label="折叠侧栏">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M14 7l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+
+            <button class="btn btn--primary btn--block" id="newChatBtn" type="button">
+                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>新建分析</span>
+            </button>
+
+            <nav class="nav" id="navStack" aria-label="主导航">
+                <button class="nav__item is-active" type="button" data-nav-target="overview">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 13h6V4H4zM14 20h6V4h-6zM4 20h6v-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    <span>风险概览</span>
+                </button>
+                <button class="nav__item" type="button" data-nav-target="evidence">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 5h9a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V8m5-3v3H4m5-3l-2-2H5a1 1 0 00-1 1v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    <span>证据链</span>
+                </button>
+                <button class="nav__item" type="button" data-nav-target="graph">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><circle cx="6" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7.7 7.6l3 8M16.6 9l-3.4 7.2M8 6.6h8" stroke="currentColor" stroke-width="1.5"/></svg>
+                    <span>图谱管理</span>
+                </button>
+            </nav>
+
+            <section class="sidebar__section sidebar__section--history">
+                <div class="section-head">
+                    <span>历史分析</span>
+                    <span class="pill-count" id="historyCount">0</span>
+                </div>
+                <div class="history-list" id="chatHistory"></div>
+            </section>
+
+            <section class="sidebar__section sidebar__section--prompts">
+                <div class="section-head">
+                    <span>风险查询模板</span>
+                    <span class="pill-count">FMEA</span>
+                </div>
+                <div class="prompt-groups" id="quickPrompts"></div>
+            </section>
+
+            <div class="sidebar__footer">
+                <button class="service-status" id="serviceStatus" type="button" title="重新检查服务状态">
+                    <span class="service-status__dot"></span>
+                    <span class="service-status__text" id="serviceStatusText">检查服务中</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- ============ Main ============ -->
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar__left">
+                    <button class="icon-btn icon-btn--ghost only-mobile" id="openSidebarBtn" type="button" title="菜单" aria-label="菜单">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="page-head">
+                        <h1 id="pageTitle">风险概览</h1>
+                        <p id="pageSubtitle">DFMEA 知识图谱检索问答工作台</p>
+                    </div>
+                </div>
+
+                <div class="topbar__right">
+                    <button class="chip" id="datasetChip" type="button" title="查看 / 设置数据集">
+                        <svg viewBox="0 0 24 24" width="15" height="15"><ellipse cx="12" cy="6" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+                        <span class="chip__label">数据集</span>
+                        <strong id="defaultCsvLabel">—</strong>
+                    </button>
+
+                    <div class="topk" title="检索返回的上下文条数">
+                        <span class="topk__label">Top-K</span>
+                        <div class="stepper">
+                            <button class="stepper__btn" id="topKMinus" type="button" aria-label="减少">−</button>
+                            <input id="topKInput" class="stepper__input" type="number" min="1" max="20" step="1" value="3">
+                            <button class="stepper__btn" id="topKPlus" type="button" aria-label="增加">+</button>
+                        </div>
+                        <button class="btn btn--ghost btn--sm" id="saveTopKBtn" type="button">应用</button>
+                    </div>
+
+                    <button class="icon-btn" id="themeToggle" type="button" title="切换明暗主题" aria-label="切换主题">
+                        <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.6v2.4M12 19v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.6 12H5M19 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18"><path d="M20 14.5A8 8 0 019.5 4 7 7 0 1020 14.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                    </button>
+
+                    <button class="icon-btn" id="toggleInspectorBtn" type="button" title="证据与图谱面板" aria-label="证据面板">
+                        <svg viewBox="0 0 24 24" width="18" height="18"><rect x="3.5" y="4.5" width="17" height="15" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M14.5 4.5v15" stroke="currentColor" stroke-width="1.7"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content" id="content">
+                <!-- ---- Dashboard ---- -->
+                <section class="dashboard" id="riskOverview" aria-label="风险概览">
+                    <div class="metrics">
+                        <button class="metric metric--critical" type="button" data-metric-action="max-risk">
+                            <span class="metric__top"><span class="metric__label">最高 RPN</span><span class="metric__icon">▲</span></span>
+                            <strong class="metric__value" id="metricMaxRpn">—</strong>
+                            <span class="metric__foot" id="metricMaxRpnLabel">等待查询</span>
+                        </button>
+                        <button class="metric metric--high" type="button" data-metric-action="high-risk">
+                            <span class="metric__top"><span class="metric__label">高风险项</span><span class="metric__icon">⚠</span></span>
+                            <strong class="metric__value" id="metricHighRisk">—</strong>
+                            <span class="metric__foot" id="metricHighRiskLabel">RPN ≥ 100</span>
+                        </button>
+                        <button class="metric" type="button" data-metric-action="data">
+                            <span class="metric__top"><span class="metric__label">平均 RPN</span><span class="metric__icon">≈</span></span>
+                            <strong class="metric__value" id="metricAvgRpn">—</strong>
+                            <span class="metric__foot">本次查询范围</span>
+                        </button>
+                        <button class="metric metric--accent" type="button" data-metric-action="evidence">
+                            <span class="metric__top"><span class="metric__label">证据节点</span><span class="metric__icon">◉</span></span>
+                            <strong class="metric__value" id="overviewEvidenceCount">0</strong>
+                            <span class="metric__foot">检索上下文</span>
+                        </button>
+                    </div>
+
+                    <div class="charts">
+                        <div class="card chart-card">
+                            <div class="card__head">
+                                <div>
+                                    <p class="eyebrow">RPN Distribution</p>
+                                    <h3>RPN 分布</h3>
+                                </div>
+                                <span class="card__hint">点击区间生成查询</span>
+                            </div>
+                            <div class="rpn-bars" id="rpnBars" aria-label="RPN 分布图"></div>
+                        </div>
+
+                        <div class="card gauge-card">
+                            <div class="card__head">
+                                <div>
+                                    <p class="eyebrow">Risk Level</p>
+                                    <h3>风险强度</h3>
+                                </div>
+                            </div>
+                            <div class="gauge" id="riskGauge"></div>
+                            <div class="gauge__legend">
+                                <span><i style="background:var(--risk-low)"></i>低</span>
+                                <span><i style="background:var(--risk-mid)"></i>中</span>
+                                <span><i style="background:var(--risk-elevated)"></i>偏高</span>
+                                <span><i style="background:var(--risk-high)"></i>高</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ---- Composer ---- -->
+                <section class="composer card" aria-label="DFMEA 查询">
+                    <form id="questionForm" class="composer__form">
+                        <div class="composer__head">
+                            <div>
+                                <p class="eyebrow">DFMEA Query</p>
+                                <h3>提出风险问题</h3>
+                            </div>
+                            <span class="mode-tag" id="currentModeLabel">标准检索</span>
+                        </div>
+
+                        <div class="composer__input">
+                            <textarea id="messageInput" rows="1" placeholder="输入 DFMEA 问题，例如：密封失效的主要原因及推荐措施是什么？"></textarea>
+                            <button class="send-btn" id="sendBtn" type="submit" disabled title="发送 (Enter)">
+                                <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 12l16-8-6 16-3-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="composer__modes" id="modeChips">
+                            <button type="button" class="mode-chip is-active" data-query-mode="标准检索">标准检索</button>
+                            <button type="button" class="mode-chip" data-query-mode="深度推理">深度推理</button>
+                            <button type="button" class="mode-chip" data-query-mode="原因追溯">原因追溯</button>
+                            <button type="button" class="mode-chip" data-query-mode="措施推荐">措施推荐</button>
+                            <span class="composer__hint">Enter 发送 · Shift+Enter 换行</span>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- ---- Answer ---- -->
+                <section class="answer card" aria-label="分析回答">
+                    <div class="answer__head">
+                        <div class="tabs" id="answerTabs" role="tablist" aria-label="回答视图">
+                            <button class="tab is-active" type="button" role="tab" data-answer-tab="summary">摘要</button>
+                            <button class="tab" type="button" role="tab" data-answer-tab="evidence">证据链</button>
+                            <button class="tab" type="button" role="tab" data-answer-tab="data">数据</button>
+                            <button class="tab" type="button" role="tab" data-answer-tab="raw">原始</button>
+                        </div>
+                        <div class="answer__actions">
+                            <button class="icon-btn icon-btn--ghost btn--sm" id="copyAnswerBtn" type="button" title="复制最新回答">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+                            </button>
+                            <button class="icon-btn icon-btn--ghost btn--sm" id="exportAnswerBtn" type="button" title="导出为 Markdown">
+                                <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chat" id="chatContainer"></div>
+                </section>
+            </div>
+        </main>
+
+        <!-- ============ Inspector ============ -->
+        <aside class="inspector is-collapsed" id="inspector" aria-label="证据与图谱面板">
+            <div class="inspector__head">
+                <div>
+                    <p class="eyebrow">Inspector</p>
+                    <h2>证据与图谱</h2>
+                </div>
+                <button class="icon-btn icon-btn--ghost" id="closeInspectorBtn" type="button" title="关闭" aria-label="关闭">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+
+            <div class="inspector__body">
+                <section class="panel">
+                    <div class="panel__head">
+                        <h3>检索证据链</h3>
+                        <span class="pill-count" id="evidenceCount">0</span>
+                    </div>
+                    <div class="evidence-list" id="evidencePanel">
+                        <div class="empty empty--sm">暂无检索证据</div>
+                    </div>
+                </section>
+
+                <section class="panel" id="graphPanel">
+                    <div class="panel__head">
+                        <h3>图谱控制</h3>
+                        <span class="state-tag" id="graphStateLabel">待确认</span>
+                    </div>
+                    <label class="field-label" for="csvPathInput">CSV 数据路径</label>
+                    <div class="field-row">
+                        <input id="csvPathInput" class="input" type="text" autocomplete="off" spellcheck="false" placeholder="data/dfmea_final.csv">
+                        <button class="icon-btn icon-btn--soft" id="resetCsvPathBtn" type="button" title="恢复默认路径">
+                            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12a7 7 0 1 1 2 4.9M5 12V7m0 5h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                    <div class="field-actions">
+                        <button class="btn btn--soft btn--block" id="buildGraphBtn" type="button">建立图谱</button>
+                        <button class="btn btn--danger-ghost btn--block" id="clearGraphBtn" type="button">清空图谱</button>
+                    </div>
+                    <dl class="kv">
+                        <div><dt>FMEA API</dt><dd id="apiBaseLabel">—</dd></div>
+                        <div><dt>默认数据</dt><dd id="inspectorCsvLabel">—</dd></div>
+                    </dl>
+                </section>
+
+                <section class="panel">
+                    <details class="raw">
+                        <summary>原始返回 (调试)</summary>
+                        <pre id="rawContextPanel">暂无数据</pre>
+                    </details>
+                </section>
+            </div>
+        </aside>
+
+        <div class="scrim" id="scrim" hidden></div>
+    </div>
+
+    <!-- ============ Clear confirm modal ============ -->
+    <div class="modal" id="confirmClearModal" aria-hidden="true">
+        <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="clearDialogTitle">
+            <div class="modal__head">
+                <div>
+                    <p class="eyebrow eyebrow--danger">Danger Zone</p>
+                    <h2 id="clearDialogTitle">确认清空 FMEA 图谱？</h2>
+                </div>
+                <button class="icon-btn icon-btn--ghost" id="cancelClearIcon" type="button" title="关闭">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal__body">
+                <p>该操作将请求后端删除本项目创建的 FMEA 节点、关系与向量索引。建议仅在重新导入 CSV 前执行。</p>
+                <label class="check">
+                    <input type="checkbox" id="clearConfirmCheck">
+                    <span>我确认要清空当前 FMEA 图谱数据</span>
+                </label>
+            </div>
+            <div class="modal__foot">
+                <button class="btn btn--ghost" id="cancelClearBtn" type="button">取消</button>
+                <button class="btn btn--danger" id="confirmClearBtn" type="button" disabled>确认清空</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+    <script src="js/app.js"></script>
+</body>
+</html>

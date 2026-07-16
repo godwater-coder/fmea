@@ -352,6 +352,9 @@ class DeterministicGlobalExtremeMixin:
         # “平均X最高”类问题应走“项目均值对比”，不要误判为“单条极值”。
         if "平均" in q:
             return None
+        # 项目内/设计项目内的极值，交给按项目分支处理，避免误答成全局极值。
+        if self._extract_process_step_general(q):
+            return None
 
         metric = self._extract_metric_any(q)
         if not metric:
@@ -581,4 +584,3 @@ class DeterministicGlobalExtremeMixin:
             "context": ["scope=global", "metric=RPN", "compare=2"],
             "context_raw": {a: av_a, b: av_b, "winner": winner},
         }
-

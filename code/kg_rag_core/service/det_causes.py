@@ -7,6 +7,55 @@ from synonyms import CAUSE_SEMANTIC_SYNONYMS
 
 
 class DeterministicCausesMixin:
+    def _try_answer_cause_by_failure_mode(self, question: str) -> dict | None:
+        q = (question or "").strip()
+        if not q:
+            return None
+        if "失效模式" not in q:
+            return None
+        if not any(k in q for k in ("失效原因", "原因", "机理")):
+            return None
+
+        kws = re.findall(r"“([^”]+)”", q)
+        if not kws:
+            return None
+        mode = str(kws[0]).strip()
+        if not mode:
+            return None
+
+        rows = self._query_params(
+            """
+            MATCH (fd:FailureMode)-[:isDueToFailureCause]->(fc:FailureCause)
+            WHERE fd.FailureMode = $mode
+            RETURN DISTINCT fc.FailureCause AS FailureCause
+            ORDER BY FailureCause
+            """.strip(),
+            {"mode": mode},
+        )
+        items = [str(r.get("FailureCause") or "").strip() for r in rows]
+        items = [x for x in items if x]
+        if not items:
+            return None
+
+        # 支持“原因是否包含‘X’”类问法，直接给结论，避免落到慢路径。
+        if ("是否" in q or "是不是" in q) and len(kws) >= 2:
+            target = str(kws[1]).strip()
+            yes = any(target and target in x for x in items)
+            answer = f"是。失效模式“{mode}”的潜在失效原因/机理包括：" + "；".join(items) + "。" if yes else \
+                f"否。失效模式“{mode}”的潜在失效原因/机理包括：" + "；".join(items) + "。"
+            return {
+                "answer": answer,
+                "context": [f"FailureMode={mode}", f"cause_contains={target}", "lookup=direct"],
+                "context_raw": items,
+            }
+
+        answer = f"失效模式“{mode}”的潜在失效原因/机理包括：" + "；".join(items) + "。"
+        return {
+            "answer": answer,
+            "context": [f"FailureMode={mode}", "lookup=direct"],
+            "context_raw": items,
+        }
+
     def _try_answer_failure_causes_by_prevent_control(self, question: str) -> dict | None:
         q = (question or "").strip()
         if not q:
@@ -37,22 +86,7 @@ class DeterministicCausesMixin:
         items = [str(r.get("FailureCause") or "").strip() for r in rows]
         items = [x for x in items if x]
         if not items:
-            # 旧图回退：预防控制可能只存在于 FailureMeasure 文本中。
-            rows2 = self._query_params(
-                """
-                MATCH (fd:FailureMode)-[:isDueToFailureCause]->(fc:FailureCause)-[:isImprovedByFailureMeasure]->(fm:FailureMeasure)
-                WHERE fm.FailureMeasure IS NOT NULL
-                  AND toString(fm.FailureMeasure) CONTAINS '预防控制：'
-                  AND toString(fm.FailureMeasure) CONTAINS $kw
-                RETURN DISTINCT fc.FailureCause AS FailureCause
-                ORDER BY FailureCause
-                """.strip(),
-                {"kw": kw},
-            )
-            items = [str(r.get("FailureCause") or "").strip() for r in rows2]
-            items = [x for x in items if x]
-            if not items:
-                return None
+            return None
 
         if len(items) == 1:
             answer = f"“{kw}”这一预防措施主要是为了防止的失效原因是：{items[0]}。"
@@ -402,4 +436,3 @@ class DeterministicCausesMixin:
         if resolved_cause and resolved_cause != cause:
             ctx.append(f"cause_resolved={resolved_cause}")
         return {"answer": answer, "context": ctx, "context_raw": items}
-

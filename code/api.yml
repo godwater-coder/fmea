@@ -91,7 +91,24 @@ components:
         answer:
           type: string
         context:
+          type: array
+          items:
+            type: string
+        context_raw:
+          type: array
+          items: {}
+        answer_file:
           type: string
+        route:
+          type: string
+        route_confidence:
+          type: number
+        missing_slots:
+          type: array
+          items:
+            type: string
+        query_ir:
+          type: object
     Question:
       type: object
       properties:

@@ -16,11 +16,30 @@ class ServicePipelineMixin:
         if not question or not str(question).strip():
             raise ValueError("question 不能为空")
 
-        self._ensure_neo4j_available()
+        basic_csv = self._try_answer_basic_csv_lookup(question)
+        if basic_csv is not None:
+            answer_file = self._save_answer_to_file(basic_csv["answer"])
+            return {
+                "answer": basic_csv["answer"],
+                "answer_file": answer_file,
+                "context": basic_csv.get("context", []),
+                "context_raw": basic_csv.get("context_raw", []),
+                "route": "csv_basic",
+                "route_confidence": 1.0,
+                "missing_slots": [],
+            }
 
-        if not self._is_graph_initialized():
+        try:
+            self._ensure_neo4j_available()
+            graph_ready = self._is_graph_initialized()
+        except Exception:
+            graph_ready = False
+
+        if not graph_ready:
             raise RuntimeError(
-                "知识图谱尚未初始化：请先调用 /api/v1/create-fmea-graph 将 CSV 导入 Neo4j 并建立向量索引。"
+                "知识图谱尚未初始化，且当前问题未命中 CSV 直答规则。"
+                "如需继续，请先调用 /api/v1/create-fmea-graph 导入 CSV，"
+                "或设置 DEFAULT_DFMEA_CSV/FMEA_DEFAULT_CSV 让服务可直接查表。"
             )
 
         # === 全局/跨项目 deterministic 分支（客观查表问题尽量避免走 LLM） ===
@@ -184,6 +203,16 @@ class ServicePipelineMixin:
                 "context_raw": direct_ctrl_presence.get("context_raw", []),
             }
 
+        direct_cause_by_mode = self._try_answer_cause_by_failure_mode(question)
+        if direct_cause_by_mode is not None:
+            answer_file = self._save_answer_to_file(direct_cause_by_mode["answer"])
+            return {
+                "answer": direct_cause_by_mode["answer"],
+                "answer_file": answer_file,
+                "context": direct_cause_by_mode.get("context", []),
+                "context_raw": direct_cause_by_mode.get("context_raw", []),
+            }
+
         direct_ctrl_by_mode = self._try_answer_controls_by_failure_mode(question)
         if direct_ctrl_by_mode is not None:
             answer_file = self._save_answer_to_file(direct_ctrl_by_mode["answer"])
@@ -314,7 +343,12 @@ class ServicePipelineMixin:
                 "context_raw": direct.get("context_raw", []),
             }
 
-        # 统一进入“问题预处理 + 图检索/向量检索 + 生成回答”流程
+        # 统一进入“Query IR -> 执行路由 -> 证据汇总 -> 答案生成”流程
+        if getattr(self, "enable_query_ir", True):
+            ir = self.build_query_ir(question)
+            execution_result = self.execute_query_ir(ir)
+            return self.compose_answer_from_ir(ir, execution_result)
+
         prep = self._preprocess_question_for_retrieval(question)
         return self._answer_question_via_vector_rag(prep)
 

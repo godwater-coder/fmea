@@ -3,7 +3,7 @@
 # 该文件承载“按设计项目/工序”维度的规则化问答分支与指标提取工具。
 
 import re
-from synonyms import METRIC_SYNONYMS
+from synonyms import INTENT_SYNONYMS, METRIC_SYNONYMS
 
 
 class DeterministicProcessStepMixin:
@@ -150,27 +150,6 @@ class DeterministicProcessStepMixin:
         )
         avg_val = rows[0].get("avg_val") if rows else None
         n = int(rows[0].get("n", 0)) if rows else 0
-
-        if avg_val is None or n == 0:
-            # 兼容旧数据（FailureMode 上未写 S/O/D）：尝试从 FailureEffect/FailureCause/FailureMeasure 上取
-            fallback_map = {
-                "S": ("FailureEffect", "resultsInFailureEffect", "S"),
-                "O": ("FailureCause", "isDueToFailureCause", "O"),
-                "D": ("FailureMeasure", "isImprovedByFailureMeasure", "D"),
-            }
-            if metric in fallback_map:
-                label, rel, prop = fallback_map[metric]
-                frows = self._query_params(
-                    f"""
-                    MATCH (fd:FailureMode)-[:occursAtProcessStep]->(ps:ProcessStep {{ProcessStep: $step}})
-                    MATCH (fd)-[:{rel}]->(x:{label})
-                    WHERE x.{prop} IS NOT NULL
-                    RETURN avg(toFloat(x.{prop})) AS avg_val, count(DISTINCT fd) AS n
-                    """.strip(),
-                    {"step": matched_name},
-                )
-                avg_val = frows[0].get("avg_val") if frows else None
-                n = int(frows[0].get("n", 0)) if frows else 0
 
         if avg_val is None or n == 0:
             return None

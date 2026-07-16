@@ -34,7 +34,17 @@ def answer_question(body: object):
         if question is None:
             return _json_response(_as_problem("Bad Request", "缺少字段: question", 400), 400)
         rag = get_rag_service()
-        return _json_response(rag.answer_question(str(question)), 200)
+        result = rag.answer_question(str(question))
+        if isinstance(result, dict):
+            if "query_ir" not in result:
+                try:
+                    result["query_ir"] = rag.build_query_ir(str(question)).to_debug_dict()
+                except Exception:
+                    result["query_ir"] = {}
+            result.setdefault("route", "structured")
+            result.setdefault("route_confidence", 1.0)
+            result.setdefault("missing_slots", [])
+        return _json_response(result, 200)
     except ValueError as e:
         return _json_response(_as_problem("Bad Request", str(e), 400), 400)
     except RuntimeError as e:

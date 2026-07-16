@@ -15,7 +15,6 @@ class DeterministicControlsTypesMixin:
         if not ("有哪些类型" in q or "主要有哪些类型" in q):
             return None
 
-        # 优先使用新图结构：FailureMode 上的专用字段
         rows = self._query_params(
             """
             MATCH (fd:FailureMode)
@@ -26,25 +25,6 @@ class DeterministicControlsTypesMixin:
         )
         items = [str(r.get("v") or "").strip() for r in rows]
         items = [x for x in items if x and x.lower() != "nan"]
-
-        # 回退兼容：解析旧图中的 FailureMeasure 混合文本
-        if not items:
-            rows = self._query_params(
-                """
-                MATCH (fm:FailureMeasure)
-                WHERE fm.FailureMeasure IS NOT NULL AND toString(fm.FailureMeasure) CONTAINS '预防控制：'
-                RETURN DISTINCT toString(fm.FailureMeasure) AS v
-                """.strip(),
-                {},
-            )
-            blob = [str(r.get("v") or "").strip() for r in rows]
-            blob = [b for b in blob if b]
-            extracted: list[str] = []
-            for b in blob:
-                m = re.search(r"预防控制：([^；]+)", b)
-                if m:
-                    extracted.append(m.group(1).strip())
-            items = [x for x in extracted if x]
 
         if not items:
             return None
@@ -110,7 +90,6 @@ class DeterministicControlsTypesMixin:
         if not ("有哪些类型" in q or "主要有哪些类型" in q):
             return None
 
-        # 优先使用新图结构：FailureMode 上的专用字段
         rows = self._query_params(
             """
             MATCH (fd:FailureMode)
@@ -121,19 +100,6 @@ class DeterministicControlsTypesMixin:
         )
         items = [str(r.get("v") or "").strip() for r in rows]
         items = [x for x in items if x and x.lower() != "nan"]
-
-        # 回退兼容：使用 FailureMeasure 节点上的 DetectionMeasure
-        if not items:
-            rows = self._query_params(
-                """
-                MATCH (fm:FailureMeasure)
-                WHERE fm.DetectionMeasure IS NOT NULL AND trim(toString(fm.DetectionMeasure)) <> ''
-                RETURN DISTINCT toString(fm.DetectionMeasure) AS v
-                """.strip(),
-                {},
-            )
-            items = [str(r.get("v") or "").strip() for r in rows]
-            items = [x for x in items if x and x.lower() != "nan"]
 
         if not items:
             return None
@@ -220,14 +186,9 @@ class DeterministicControlsTypesMixin:
         rows = self._query_params(
             """
             MATCH (ps:ProcessStep)<-[:occursAtProcessStep]-(fd:FailureMode)
-            WHERE (
-                fd.DetectionMeasure IS NOT NULL AND trim(toString(fd.DetectionMeasure)) <> ''
-                AND toString(fd.DetectionMeasure) CONTAINS $kw
-            ) OR EXISTS {
-                MATCH (fd)-[:isDueToFailureCause]->(:FailureCause)-[:isImprovedByFailureMeasure]->(fm:FailureMeasure)
-                WHERE fm.DetectionMeasure IS NOT NULL AND trim(toString(fm.DetectionMeasure)) <> ''
-                  AND toString(fm.DetectionMeasure) CONTAINS $kw
-            }
+            WHERE fd.DetectionMeasure IS NOT NULL
+              AND trim(toString(fd.DetectionMeasure)) <> ''
+              AND toString(fd.DetectionMeasure) CONTAINS $kw
             RETURN DISTINCT ps.ProcessStep AS ProcessStep
             ORDER BY ProcessStep
             """.strip(),
@@ -248,4 +209,3 @@ class DeterministicControlsTypesMixin:
             "context": ["scope=global", f"detect_kw={kw}", "list=projects"],
             "context_raw": items,
         }
-

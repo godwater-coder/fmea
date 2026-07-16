@@ -20,6 +20,9 @@ NEO4J_URL = getenv("NEO4J_URL")
 NEO4J_USERNAME = getenv("NEO4J_USERNAME")
 NEO4J_PASSWORD = getenv("NEO4J_PASSWORD")
 NEO4J_DATABASE = getenv("NEO4J_DATABASE")
+QA_ENABLE_QUERY_IR = getenv("QA_ENABLE_QUERY_IR", "1")
+QA_QUERY_IR_STRICT_MODE = getenv("QA_QUERY_IR_STRICT_MODE", "1")
+QA_ENABLE_LLM_CYPHER_FALLBACK = getenv("QA_ENABLE_LLM_CYPHER_FALLBACK", "1")
 
 # 推理模板常量
 CYPHER_GENERATION_TEMPLATE = """
@@ -60,6 +63,8 @@ CYPHER_QA_TEMPLATE = """
 2) 回答要像自然对话中的直接回答，不要提及“根据上下文/根据 JSON/根据结果”等措辞。
 3) 如果上下文为空，请明确回答你不知道。
 4) 请用中文回答。
+5) 只输出最终答案，不要输出前缀“回答：”“总结：”“助手：”。
+6) 若上下文中包含多个候选，只保留与问题最直接相关的内容，避免扩写。
 
 上下文：
 "{context}"
@@ -70,10 +75,12 @@ CYPHER_QA_TEMPLATE = """
 
 ANSWER_SUMMARIZE_TEMPLATE = """
 任务：
-请对给定信息进行总结，使总结内容能够回答问题，并且适合在后续推理任务中继续使用。
+请对给定信息进行结构化提炼，使其适合后续回答问题。
 
 要求：
 1) 只保留与问题直接相关的信息，去掉冗余内容。
+2) 优先保留原始字段名、数值和实体名称，不要改写成抽象描述。
+3) 如果信息与问题无关，直接返回空。
 2) 输出为中文。
 
 信息：

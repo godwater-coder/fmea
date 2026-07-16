@@ -19,6 +19,7 @@ from __future__ import annotations
 CSV_COLUMN_SYNONYMS: dict[str, str] = {
     # 工序/项目
     "设计项目": "ProcessStep",
+    "项目/功能": "ProcessStep",
     "过程步骤": "ProcessStep",
     "工序": "ProcessStep",
     # 失效相关
@@ -32,18 +33,25 @@ CSV_COLUMN_SYNONYMS: dict[str, str] = {
     "潜在失效原因": "FailureCause",
     # 评分
     "严重度": "S",
+    "严酷度(S)": "S",
     "频度数": "O",
     "发生度": "O",
+    "发生度(O)": "O",
     "探测度数": "D",
     "探测度": "D",
+    "可探测度(D)": "D",
     "RPN": "RPN",
+    "风险优先数(RPN)": "RPN",
     # 控制/措施
     "现行探测性设计控制": "DetectionMeasure",
     "现行探测性控制": "DetectionMeasure",
-    # 临时措施更贴近“改进措施”语义，作为 FailureMeasure
-    "临时采取的措施": "FailureMeasure",
-    # 预防性控制（在建图时会合并进 FailureMeasure，同时也保留专用字段）
+    "现行探测控制": "DetectionMeasure",
+    # 改进/建议措施统一映射到项目级标准字段 RecommendedAction。
+    "临时采取的措施": "RecommendedAction",
+    "建议措施": "RecommendedAction",
+    # 预防性控制独立保留，不再与措施字段混合。
     "现行预防性设计控制": "PreventControl",
+    "现行预防控制": "PreventControl",
 }
 
 # --------------------------------------------------------------------------------------

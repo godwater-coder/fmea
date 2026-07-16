@@ -112,3 +112,19 @@ cd FluxPanel/flux-frontend/
 npm run dev -- --port 5173 --
 
 http://localhost:5173/#/fmea-qa
+
+本地 Neo4j 已经装好并跑起来了。
+
+当前状态：
+
+已通过官方 APT 仓库安装 Neo4j 2026.05.0
+服务状态是 active (running)
+本地监听地址是 127.0.0.1:7474 和 127.0.0.1:7687
+已把本地 neo4j 账号密码改成 12345678
+已验证新密码可以通过 Bolt 正常登录
+你现在可以用这些本地连接信息：
+
+NEO4J_URL=bolt://127.0.0.1:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=12345678
+NEO4J_DATABASE=neo4j

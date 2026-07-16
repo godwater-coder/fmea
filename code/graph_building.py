@@ -21,12 +21,11 @@ def _query_with_params(repo, cypher: str, params: dict) -> list[dict]:
 
 def traverse_graph(repo, failure_mode_element_id: str) -> list[dict]:
     query = """
-    MATCH (fm:FailureMeasure)<-[:isImprovedByFailureMeasure]-(fc:FailureCause)<-[:isDueToFailureCause]-(fd:FailureMode)-[:occursAtProcessStep]->(ps:ProcessStep)
-    WITH fm, fc, fd, ps
-    MATCH (fd)-[:resultsInFailureEffect]->(fe:FailureEffect)
+    MATCH (fd:FailureMode)-[:occursAtProcessStep]->(ps:ProcessStep)
+    OPTIONAL MATCH (fd)-[:isDueToFailureCause]->(fc:FailureCause)
+    OPTIONAL MATCH (fd)-[:resultsInFailureEffect]->(fe:FailureEffect)
     WHERE elementId(fd)=$id
-    RETURN fm, fc, fe, fd, ps,
-           elementId(fm) AS fm_id,
+    RETURN fc, fe, fd, ps,
            elementId(fc) AS fc_id,
            elementId(fe) AS fe_id,
            elementId(fd) AS fd_id,
@@ -51,38 +50,17 @@ def get_failure_mode_ids(repo) -> list[dict]:
         print(e)
         return []
 
-
-def get_failure_measure_ids(repo) -> list[dict]:
-    try:
-        return repo.query(
-            """
-            MATCH (fm:FailureMeasure)
-            RETURN elementId(fm) AS fm_id;
-            """
-        )
-    except Exception as e:
-        print(e)
-        return []
-
-
 def create_chunk(nodes: list[dict]) -> tuple[str, dict]:
-    fm, fc, fe, fd, ps = [[] for _ in range(5)]
+    fc, fe, fd, ps = [[] for _ in range(4)]
 
     node_ids = {
         "failureModeIds": [],
         "failureEffectIds": [],
         "failureCauseIds": [],
-        "failureMeasureIds": [],
         "processStepIds": [],
     }
 
     for node in nodes:
-        fm_node = node.get("fm")
-        if fm_node is not None and fm_node not in fm:
-            fm.append(fm_node)
-            if node.get("fm_id") is not None:
-                node_ids["failureMeasureIds"].append(node["fm_id"])
-
         fc_node = node.get("fc")
         if fc_node is not None and fc_node not in fc:
             fc.append(fc_node)
@@ -139,13 +117,15 @@ def create_chunk(nodes: list[dict]) -> tuple[str, dict]:
             for i in fc
         )
         + "".join(
-            ", FailureMeasure: "
-            + _get_str(i, "FailureMeasure")
+            ", PreventControl: "
+            + _get_str(i, "PreventControl")
             + ", DetectionMeasure: "
             + _get_str(i, "DetectionMeasure")
+            + ", RecommendedAction: "
+            + _get_str(i, "RecommendedAction")
             + ", D: "
             + _get_str(i, "D")
-            for i in fm
+            for i in fd
         )
     )
 
@@ -193,33 +173,14 @@ def create_vector_embeddings(repo) -> bool:
 
 def create_fmea_graph(repo, csv_file: str) -> bool:
     repo._ensure_neo4j_available()
+    try:
+        repo.clear_fmea_graph()
+    except Exception:
+        pass
 
     df = repo._read_dfmea_csv(csv_file)
     if df is None:
         return False
-
-    if "FailureMeasure" in df.columns and "TempMeasure" not in df.columns:
-        df["TempMeasure"] = df["FailureMeasure"]
-
-    if "PreventControl" in df.columns:
-        fm = df["FailureMeasure"] if "FailureMeasure" in df.columns else ""
-        fm = fm.fillna("").astype(str).str.strip()
-        pc = df["PreventControl"].fillna("").astype(str).str.strip()
-
-        combined = []
-        for a, b in zip(pc.tolist(), fm.tolist()):
-            a = a.strip() if isinstance(a, str) else ""
-            b = b.strip() if isinstance(b, str) else ""
-            if a and b:
-                combined.append(f"预防控制：{a}；临时/改进措施：{b}")
-            elif a:
-                combined.append(f"预防控制：{a}")
-            elif b:
-                combined.append(b)
-            else:
-                combined.append("")
-
-        df["FailureMeasure"] = combined
 
     if "FailureMode" not in df.columns or "ProcessStep" not in df.columns:
         return False
@@ -254,7 +215,22 @@ def create_fmea_graph(repo, csv_file: str) -> bool:
 
         prevent_control = _to_none_if_blank(row.get("PreventControl"))
         detect_control = _to_none_if_blank(row.get("DetectionMeasure"))
+        recommended_action = _to_none_if_blank(row.get("RecommendedAction"))
         temp_measure = _to_none_if_blank(row.get("TempMeasure"))
+        action_priority = _to_none_if_blank(row.get("ActionPriority"))
+        action_status = _to_none_if_blank(row.get("ActionStatus"))
+        action_result = _to_none_if_blank(row.get("ActionResult"))
+        remark = _to_none_if_blank(row.get("Remark"))
+        fmea_id = _to_none_if_blank(row.get("FmeaID"))
+        product = _to_none_if_blank(row.get("Product"))
+        analysis_level = _to_none_if_blank(row.get("AnalysisLevel"))
+        domain = _to_none_if_blank(row.get("Domain"))
+        dataset_id = _to_none_if_blank(row.get("DatasetID"))
+        project_id = _to_none_if_blank(row.get("ProjectID"))
+        schema_version = _to_none_if_blank(row.get("SchemaVersion"))
+        source_file = _to_none_if_blank(row.get("SourceFile"))
+        source_row_no = row.get("SourceRowNo")
+        import_batch_id = _to_none_if_blank(row.get("ImportBatchID"))
 
         rpn = row.get("RPN")
         s_val = row.get("S")
@@ -268,7 +244,16 @@ def create_fmea_graph(repo, csv_file: str) -> bool:
             MERGE_NODE_QUERY.format(
                 nodeRef="ProcessStep",
                 node="ProcessStep",
-                properties=repo.format_properties({"ProcessStep": process_step}),
+                properties=repo.format_properties(
+                    {
+                        "ProcessStep": process_step,
+                        "Product": product,
+                        "AnalysisLevel": analysis_level,
+                        "Domain": domain,
+                        "DatasetID": dataset_id,
+                        "ProjectID": project_id,
+                        "SchemaVersion": schema_version,                    }
+                ),
             )
         )
 
@@ -285,7 +270,22 @@ def create_fmea_graph(repo, csv_file: str) -> bool:
                         "D": d_val,
                         "PreventControl": prevent_control,
                         "DetectionMeasure": detect_control,
+                        "RecommendedAction": recommended_action,
                         "TempMeasure": temp_measure,
+                        "ActionPriority": action_priority,
+                        "ActionStatus": action_status,
+                        "ActionResult": action_result,
+                        "Remark": remark,
+                        "FmeaID": fmea_id,
+                        "Product": product,
+                        "AnalysisLevel": analysis_level,
+                        "Domain": domain,
+                        "DatasetID": dataset_id,
+                        "ProjectID": project_id,
+                        "SchemaVersion": schema_version,
+                        "SourceFile": source_file,
+                        "SourceRowNo": source_row_no,
+                        "ImportBatchID": import_batch_id,
                     }
                 ),
             )
@@ -331,31 +331,6 @@ def create_fmea_graph(repo, csv_file: str) -> bool:
                     nodeRef2="FailureCause",
                 )
             )
-
-        failure_measure = _to_none_if_blank(row.get("FailureMeasure"))
-        detection_measure = _to_none_if_blank(row.get("DetectionMeasure"))
-        if failure_measure or detection_measure or (d_val is not None and not (isinstance(d_val, float) and pd.isna(d_val))):
-            nodes.append(
-                MERGE_NODE_QUERY.format(
-                    nodeRef="FailureMeasure",
-                    node="FailureMeasure",
-                    properties=repo.format_properties(
-                        {
-                            "FailureMeasure": failure_measure,
-                            "DetectionMeasure": detection_measure,
-                            "D": d_val,
-                        }
-                    ),
-                )
-            )
-            if failure_cause:
-                relations.append(
-                    MERGE_RELATION_QUERY.format(
-                        nodeRef1="FailureCause",
-                        relation="isImprovedByFailureMeasure",
-                        nodeRef2="FailureMeasure",
-                    )
-                )
 
         query = "\n".join(nodes + relations)
 

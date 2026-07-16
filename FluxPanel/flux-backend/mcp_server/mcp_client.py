@@ -26,7 +26,7 @@ class MCPClient:
             or os.getenv("OPENAI_BASE_URL")
             or "http://127.0.0.1:11434/v1"
         )
-        self.model = os.getenv("OLLAMA_MODEL") or os.getenv("OPENAI_API_MODEL") or os.getenv("OPENAI_MODEL") or "qwen3.6:7b"
+        self.model = os.getenv("OLLAMA_MODEL") or os.getenv("OPENAI_API_MODEL") or os.getenv("OPENAI_MODEL") or "qwen3.6:27b"
         if not self.openai_api_key:
             raise ValueError("❌ 未找到 OpenAI API Key，请在 .env 文件中设置 OPENAI_API_KEY")
         self.client = AsyncOpenAI(api_key=self.openai_api_key, base_url=self.base_url)  # 创建OpenAI client

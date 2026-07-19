@@ -5,7 +5,7 @@ from os import getenv
 
 from kg_rag_core import _as_problem, _json_response
 from kg_rag_runtime import get_rag_service
-
+#asproblem 构造统一错误对象
 
 # 接口定义
 
@@ -15,7 +15,7 @@ def create_graph(body: object):
         if not path:
             return _json_response(_as_problem("Bad Request", "缺少字段: path", 400), 400)
         rag = get_rag_service()
-        ok = rag.create_fmea_graph(csv_file=path)
+        ok = rag.create_fmea_graph(csv_file=path) #建图
         if not ok:
             return _json_response(
                 _as_problem("Internal Server Error", "建图失败：请检查 CSV 路径、Neo4j 连接与写入权限。", 500), 500
@@ -38,10 +38,10 @@ def answer_question(body: object):
         if isinstance(result, dict):
             if "query_ir" not in result:
                 try:
-                    result["query_ir"] = rag.build_query_ir(str(question)).to_debug_dict()
+                    result["query_ir"] = rag.build_query_ir(str(question)).to_debug_dict() #把问题解释成一个queryIR对象
                 except Exception:
                     result["query_ir"] = {}
-            result.setdefault("route", "structured")
+            result.setdefault("route", "structured") #如果route为空，则置为structured
             result.setdefault("route_confidence", 1.0)
             result.setdefault("missing_slots", [])
         return _json_response(result, 200)
@@ -73,10 +73,10 @@ def set_top_k(body: object):
         return _json_response(_as_problem("Bad Request", f"top_k 非法：{e}", 400), 400)
 
 
-def clear_graph(body: object):
+def clear_graph(body: object): #用于清空图
     try:
         confirm = body.get("confirm") if isinstance(body, dict) else None
-        if confirm is not True:
+        if confirm is not True: #严格要求只有bool Ture才能通过
             return _json_response(
                 _as_problem("Bad Request", "缺少字段: confirm（必须为 true）", 400),
                 400,
@@ -91,8 +91,8 @@ def clear_graph(body: object):
 
 # 主入口
 if __name__ == "__main__":
-    app = connexion.FlaskApp(__name__)
-    app.add_api("api.yml")
+    app = connexion.FlaskApp(__name__) #创建基于Flask的应用
+    app.add_api("api.yml") # 加载后端接口路径
     application = app.app
     # 让中文以 unicode 形式输出（\uXXXX），避免终端/客户端编码不一致。
     # 可通过环境变量 JSON_UNICODE_ESCAPE 控制：1/true=开启（默认），0/false=关闭。

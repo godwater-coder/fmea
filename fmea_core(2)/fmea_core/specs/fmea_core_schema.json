@@ -1,0 +1,339 @@
+{
+  "record_type": "fmea_record",
+  "template_basis": "standard_fmea_analysis_table",
+  "description": "以标准 FMEA 分析表为基准，抽象出跨领域通用的 FMEA 核心范式，用于 CSV/Excel 导入、图谱建模、检索和问答的统一输入标准。",
+  "standard_columns": [
+    "Item/Process",
+    "Function",
+    "Potential Failure Mode",
+    "Potential Effects of Failure",
+    "Severity",
+    "Potential Cause(s)",
+    "Occurrence",
+    "Current Controls",
+    "Detection",
+    "RPN",
+    "Recommended Actions",
+    "Responsibility",
+    "Target Completion Date",
+    "Actions Taken",
+    "Revised S/O/D/RPN",
+    "Status"
+  ],
+  "public_fields": {
+    "record_id": {
+      "description": "唯一记录标识",
+      "type": "string",
+      "required": true,
+      "multi_value": false,
+      "nullable": false,
+      "aliases": ["ID", "RecordID", "FMEA编号", "编号", "序号", "故障模式码", "LCN"],
+      "relationships": ["primary_key"]
+    },
+    "item_process": {
+      "description": "标准 FMEA 分析表中的项目/工序/对象列",
+      "type": "string",
+      "required": true,
+      "multi_value": false,
+      "nullable": false,
+      "aliases": ["Item/Process", "Item", "Process", "ProcessStep", "Product", "产品", "System", "Part", "DesignProject", "设计项目", "工序", "产品名称", "项目名称", "系统名称", "设计对象", "电池组箱体", "动力电池", "电阻器门类"],
+      "relationships": ["belongs_to"]
+    },
+    "analysis_level": {
+      "description": "分析层级",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["AnalysisLevel", "分析层级"],
+      "relationships": ["context"]
+    },
+    "function": {
+      "description": "功能或预期用途",
+      "type": "string",
+      "required": true,
+      "multi_value": false,
+      "nullable": false,
+      "aliases": ["Function", "FunctionDescription", "项目/功能", "功能", "预期功能", "功能描述", "功能说明", "设计功能"],
+      "relationships": ["describes"]
+    },
+    "failure_mode": {
+      "description": "失效模式",
+      "type": "string",
+      "required": true,
+      "multi_value": true,
+      "nullable": false,
+      "aliases": ["FailureMode", "PotentialFailureMode", "失效模式", "潜在的失效模式", "Potential Failure Mode", "潜在失效模式", "FM", "故障模式"],
+      "relationships": ["core_entity"]
+    },
+    "failure_effect": {
+      "description": "失效后果",
+      "type": "string",
+      "required": true,
+      "multi_value": true,
+      "nullable": false,
+      "aliases": ["FailureEffect", "Effect", "失效后果", "潜在的失效后果", "Potential Effects of Failure", "潜在失效后果", "FE", "故障影响", "失效影响", "定义简述", "过载失效", "损耗失效", "机械振动"],
+      "relationships": ["caused_by"]
+    },
+    "failure_cause": {
+      "description": "失效原因或机理",
+      "type": "string",
+      "required": true,
+      "multi_value": true,
+      "nullable": false,
+      "aliases": ["FailureCause", "Cause", "原因", "潜在的失效原因/机理", "潜在失效原因/机理", "Potential Cause(s)", "FC", "故障原因", "失效原因", "失效机理", "封装相关失效机理", "芯片相关失效机理", "失效原因1：器件本身缺陷"],
+      "relationships": ["explains"]
+    },
+    "severity": {
+      "description": "严重度",
+      "type": "number",
+      "required": true,
+      "multi_value": false,
+      "nullable": false,
+      "range": {"min": 1, "max": 10},
+      "aliases": ["S", "Severity", "严重度", "严酷度(S)", "严酷度等级S", "严重度等级S"],
+      "relationships": ["risk_score_component"]
+    },
+    "occurrence": {
+      "description": "频度",
+      "type": "number",
+      "required": true,
+      "multi_value": false,
+      "nullable": false,
+      "range": {"min": 1, "max": 10},
+      "aliases": ["O", "Occurrence", "频度数", "频度", "发生度(O)", "发生概率等级O", "频度等级O"],
+      "relationships": ["risk_score_component"]
+    },
+    "prevention_control": {
+      "description": "现行预防控制措施",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["PreventionControl", "CurrentPreventionControl", "现行预防控制", "现行预防性设计控制", "FailureMeasure", "控制措施", "失效控制措施", "失效控制"],
+      "relationships": ["mitigates"]
+    },
+    "ext_temperature_cycle": {
+      "description": "温度循环或温度冲击等环境条件",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["温度循环", "温度冲击", "温度变化", "温度循环次数", "温度循环条件"],
+      "relationships": ["environment"]
+    },
+    "ext_relative_humidity": {
+      "description": "相对湿度或环境湿度",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["相对湿度", "湿度", "湿度等级", "环境湿度"],
+      "relationships": ["environment"]
+    },
+    "ext_steady_temperature": {
+      "description": "稳态温度条件",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["稳态温度", "稳态热", "稳态温度条件"],
+      "relationships": ["environment"]
+    },
+    "ext_contamination": {
+      "description": "污染或沾污相关条件",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["沾污", "污染", "污染物", "污染失效"],
+      "relationships": ["environment"]
+    },
+    "ext_electrical_stress": {
+      "description": "过载电压/电流应力",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["过载电压电流", "过载电压", "过载电流", "电压电流应力"],
+      "relationships": ["environment"]
+    },
+    "ext_location": {
+      "description": "失效部位或发生位置",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["部位", "失效部位", "发生位置", "位置", "失效位置"],
+      "relationships": ["location"]
+    },
+    "detection_control": {
+      "description": "现行探测控制措施",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["DetectionControl", "CurrentDetectionControl", "现行探测控制", "现行探测性设计控制", "DetectionMeasure", "故障检测方法", "检测方法", "探测方法"],
+      "relationships": ["detects"]
+    },
+    "current_control": {
+      "description": "现行控制措施的统一汇总字段，兼容旧表和简化表",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["CurrentControl", "Control", "现行控制", "Current Controls"],
+      "relationships": ["mitigates"]
+    },
+    "detection": {
+      "description": "探测度",
+      "type": "number",
+      "required": true,
+      "multi_value": false,
+      "nullable": false,
+      "range": {"min": 1, "max": 10},
+      "aliases": ["D", "Detection", "探测度数", "探测度", "可探测度(D)", "检测难度等级D", "探测度等级D"],
+      "relationships": ["risk_score_component"]
+    },
+    "rpn": {
+      "description": "风险优先数",
+      "type": "number",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["RPN", "RiskPriorityNumber", "风险优先数(RPN)", "风险优先数RPN"],
+      "relationships": ["derived_from"]
+    },
+    "action_priority": {
+      "description": "措施优先级",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["ActionPriority", "AP", "措施优先级(AP)"],
+      "relationships": ["priority"]
+    },
+    "recommended_action": {
+      "description": "建议措施或纠正动作",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["RecommendedAction", "Recommended Actions", "Action", "建议措施", "临时采取的措施", "改进措施", "补充措施"],
+      "relationships": ["follow_up"]
+    },
+    "owner": {
+      "description": "责任人或责任部门",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["Owner", "ResponsiblePerson", "Responsibility", "责任人"],
+      "relationships": ["accountable_for"]
+    },
+    "target_completion_date": {
+      "description": "目标完成日期",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["TargetCompletionDate", "Target Date", "完成日期"],
+      "relationships": ["timeline"]
+    },
+    "action_taken": {
+      "description": "已采取的行动",
+      "type": "string",
+      "required": false,
+      "multi_value": true,
+      "nullable": true,
+      "aliases": ["ActionTaken", "Actions Taken", "措施结果", "已采取措施", "补充措施"],
+      "relationships": ["follow_up"]
+    },
+    "revised_severity": {
+      "description": "修订后严重度",
+      "type": "number",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["RevisedSeverity", "Revised S"],
+      "relationships": ["risk_score_component"]
+    },
+    "revised_occurrence": {
+      "description": "修订后频度",
+      "type": "number",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["RevisedOccurrence", "Revised O"],
+      "relationships": ["risk_score_component"]
+    },
+    "revised_detection": {
+      "description": "修订后探测度",
+      "type": "number",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["RevisedDetection", "Revised D"],
+      "relationships": ["risk_score_component"]
+    },
+    "revised_rpn": {
+      "description": "修订后风险优先数",
+      "type": "number",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["RevisedRPN", "Revised RPN"],
+      "relationships": ["derived_from"]
+    },
+    "status": {
+      "description": "状态",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "enum": ["open", "in_progress", "closed", "cancelled", "pending"],
+      "aliases": ["Status", "措施状态", "状态"],
+      "relationships": ["workflow_state"]
+    },
+    "remarks": {
+      "description": "备注",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["Remarks", "备注", "定义简述"],
+      "relationships": ["notes"]
+    },
+    "source_table": {
+      "description": "原始数据表名或来源系统",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["SourceTable", "Source", "来源"],
+      "relationships": ["traceability"]
+    },
+    "source_record_id": {
+      "description": "原始记录编号",
+      "type": "string",
+      "required": false,
+      "multi_value": false,
+      "nullable": true,
+      "aliases": ["SourceRecordID", "SourceRowID"],
+      "relationships": ["traceability"]
+    }
+  },
+  "extension_fields": {
+    "description": "受控扩展字段，用于承载特定领域的业务信息；扩展字段统一以 ext_ 前缀或 ext. 命名空间承载。",
+    "type": "object",
+    "reserved_prefix": ["ext_", "ext."],
+    "allowed_value_types": ["string", "number", "boolean", "array", "object"],
+    "examples": [
+      "ext_part_number",
+      "ext_environment",
+      "ext_customer_impact",
+      "ext_test_method",
+      "ext_raw_value"
+    ]
+  }
+}

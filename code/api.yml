@@ -3,7 +3,7 @@ openapi: 3.0.1
 info:
   title: KG RAG FMEA API
   version: "1.0.0"
-
+# 定义服务基地址
 servers:
   - url: http://localhost:8080/api/v1
 
@@ -42,6 +42,8 @@ paths:
   /question-answer:
     post:
       summary: Run question answering
+      #处理函数是 kg_rag.py 中的 answer_question 函数
+      #收到这个请求后，去 Python 模块 kg_rag 里调用 answer_question
       operationId: kg_rag.answer_question
       requestBody:
         content:

@@ -1,0 +1,292 @@
+schema: fmea_core_schema
+purpose: 将不同来源的原始 FMEA 字段映射到统一范式
+rules:
+  - target: record_id
+    aliases:
+      - ID
+      - RecordID
+      - FMEA编号
+      - 编号
+      - 序号
+      - 故障模式码
+      - LCN
+    normalization:
+      - trim
+      - preserve_as_string
+  - target: item_process
+    aliases:
+      - Item
+      - Product
+      - 产品
+      - System
+      - Part
+      - DesignProject
+      - 设计项目
+      - 设计对象
+      - 组件
+      - 产品名称
+      - 项目名称
+      - 系统名称
+      - 动力电池
+      - 电池组箱体
+    normalization:
+      - trim
+      - collapse_whitespace
+  - target: analysis_level
+    aliases:
+      - AnalysisLevel
+      - 分析层级
+  - target: function
+    aliases:
+      - Function
+      - FunctionDescription
+      - 项目/功能
+      - 功能
+      - 预期功能
+      - 功能描述
+      - 功能说明
+      - 设计功能
+  - target: failure_mode
+    aliases:
+      - FailureMode
+      - PotentialFailureMode
+      - 失效模式
+      - 潜在的失效模式
+      - 潜在失效模式
+      - FM
+      - 故障模式
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: failure_effect
+    aliases:
+      - FailureEffect
+      - Effect
+      - 失效后果
+      - 潜在的失效后果
+      - 潜在失效后果
+      - FE
+      - 故障影响
+      - 失效影响
+      - 定义简述
+      - 过载失效
+      - 损耗失效
+      - 机械振动
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: failure_cause
+    aliases:
+      - FailureCause
+      - Cause
+      - 原因
+      - 潜在的失效原因/机理
+      - 潜在失效原因/机理
+      - FC
+      - 故障原因
+      - 失效原因
+      - 失效机理
+      - 封装相关失效机理
+      - 芯片相关失效机理
+      - 失效原因1：器件本身缺陷
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: prevention_control
+    aliases:
+      - PreventionControl
+      - CurrentPreventionControl
+      - 现行预防控制
+      - 现行预防性设计控制
+      - 控制措施
+      - 失效控制措施
+      - 失效控制
+  - target: ext_temperature_cycle
+    aliases:
+      - 温度循环
+      - 温度冲击
+      - 温度变化
+      - 温度循环次数
+      - 温度循环条件
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: ext_relative_humidity
+    aliases:
+      - 相对湿度
+      - 湿度
+      - 湿度等级
+      - 环境湿度
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: ext_steady_temperature
+    aliases:
+      - 稳态温度
+      - 稳态热
+      - 稳态温度条件
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: ext_contamination
+    aliases:
+      - 沾污
+      - 污染
+      - 污染物
+      - 污染失效
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: ext_electrical_stress
+    aliases:
+      - 过载电压电流
+      - 过载电压
+      - 过载电流
+      - 电压电流应力
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: ext_location
+    aliases:
+      - 部位
+      - 失效部位
+      - 发生位置
+      - 位置
+      - 失效位置
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: detection_control
+    aliases:
+      - DetectionControl
+      - CurrentDetectionControl
+      - 现行探测控制
+      - 现行探测性设计控制
+      - 故障检测方法
+      - 检测方法
+      - 探测方法
+  - target: current_control
+    aliases:
+      - CurrentControl
+      - Control
+      - 现行控制
+      - FailureMeasure
+      - DetectionMeasure
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: severity
+    aliases:
+      - S
+      - Severity
+      - 严重度
+      - 严重性
+      - 严酷度(S)
+      - 严酷度等级S
+      - 严重度等级S
+    normalization:
+      - parse_integer
+      - clamp_range: [1, 10]
+  - target: occurrence
+    aliases:
+      - O
+      - Occurrence
+      - 频度数
+      - 频度
+      - 发生度(O)
+      - 发生概率等级O
+      - 频度等级O
+    normalization:
+      - parse_integer
+      - clamp_range: [1, 10]
+  - target: detection
+    aliases:
+      - D
+      - Detection
+      - 探测度数
+      - 探测度
+      - 可探测度(D)
+      - 检测难度等级D
+      - 探测度等级D
+    normalization:
+      - parse_integer
+      - clamp_range: [1, 10]
+  - target: rpn
+    aliases:
+      - RPN
+      - RiskPriorityNumber
+      - 风险优先数(RPN)
+      - 风险优先数RPN
+    normalization:
+      - parse_integer
+  - target: action_priority
+    aliases:
+      - ActionPriority
+      - AP
+      - 措施优先级(AP)
+  - target: recommended_action
+    aliases:
+      - RecommendedAction
+      - Action
+      - 建议措施
+      - 临时采取的措施
+      - 改进措施
+      - 补充措施
+    normalization:
+      - trim
+      - collapse_whitespace
+      - split_multi_values_on_delimiters
+  - target: owner
+    aliases:
+      - Owner
+      - ResponsiblePerson
+      - 责任人
+      - 责任部门
+  - target: status
+    aliases:
+      - Status
+      - 措施状态
+      - 状态
+  - target: action_taken
+    aliases:
+      - ActionTaken
+      - Actions Taken
+      - 措施结果
+      - 已采取措施
+      - 补充措施
+  - target: remarks
+    aliases:
+      - Remarks
+      - 备注
+      - 定义简述
+    normalization:
+      - normalize_enum
+      - map_values:
+        "已完成": "closed"
+        "进行中": "in_progress"
+        "待处理": "open"
+        "取消": "cancelled"
+  - target: source_table
+    aliases:
+      - SourceTable
+      - Source
+      - 来源
+  - target: source_record_id
+    aliases:
+      - SourceRecordID
+      - SourceRowID
+mapping_policy:
+  - prefer_exact_column_match_first: true
+  - fall_back_to_alias_lookup: true
+  - if_multiple_matches_exist: choose_the_most_specific_alias
+  - preserve_original_value_in_extension: true

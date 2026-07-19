@@ -1,0 +1,68 @@
+guideline: 统一导入前的数据标准化与归一化规则
+rules:
+  - name: trim_whitespace
+    applies_to: all_string_fields
+    action: remove_leading_and_trailing_whitespace
+  - name: collapse_whitespace
+    applies_to: all_string_fields
+    action: replace_multiple_whitespace_with_single_space
+  - name: normalize_full_width_punctuation
+    applies_to: all_string_fields
+    action: convert_full_width_punctuation_to_half_width
+  - name: unify_separators
+    applies_to: multi_value_fields
+    action: normalize_delimiters
+    delimiters:
+      - ";"
+      - "；"
+      - "|"
+      - "，"
+      - "\n"
+    target_delimiter: ";"
+  - name: normalize_missing_values
+    applies_to: all_fields
+    action: replace_empty_like_values_with_null
+    empty_like_values:
+      - ""
+      - " "
+      - "N/A"
+      - "n/a"
+      - "NA"
+      - "na"
+      - "None"
+      - "none"
+      - "NULL"
+      - "null"
+      - "-"
+      - "——"
+  - name: parse_numeric_fields
+    applies_to:
+      - severity
+      - occurrence
+      - detection
+      - rpn
+    action: parse_integer_or_float
+  - name: normalize_enum_values
+    applies_to:
+      - status
+    action: lowercase_and_trim
+  - name: preserve_original_value
+    applies_to: all_fields
+    action: store_original_value_in_extension_field
+    target_field: ext_raw_value
+  - name: split_multi_value_fields
+    applies_to:
+      - failure_mode
+      - failure_effect
+      - failure_cause
+      - current_control
+      - recommended_action
+    action: split_into_array_if_delimiter_present
+  - name: guard_against_empty_required_fields
+    applies_to: required_public_fields
+    action: raise_error_if_still_empty_after_normalization
+output_contract:
+  - all_fields_must_be_in_standard_name
+  - extension_fields_must_use_reserved_prefix
+  - raw_values_should_not_be_dropped
+  - normalized_records_should_be_reproducible

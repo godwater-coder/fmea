@@ -9,16 +9,17 @@ from urllib.parse import urlparse
 from kg_rag_core import KGRAGService
 
 # RAG 服务（懒初始化）
-#
+#先不创建KGRAGServace，等第一次有人调用接口时在创建
 # 原因：`Neo4jVector.__init__` 会立即 `verify_connectivity()`。
 # 当 NEO4J_URL 指向 Aura 但当前机器无法解析外网域名/无网络时，
 # 若在模块加载阶段就初始化，会导致 `python code/kg_rag.py` 直接崩溃、服务无法启动。
-_rag_service = None
-_rag_service_init_error: Exception | None = None
-_rag_service_lock = threading.Lock()
 
+_rag_service = None #已经创建好的服务实例
+_rag_service_init_error: Exception | None = None #上次初始化失败记录的异常
+_rag_service_lock = threading.Lock() #并发初始化时用到的锁
 
-def _neo4j_url_host_port(url: str | None) -> tuple[str | None, int | None]:
+#从Neo4j的URL中解析出host和post
+def _neo4j_url_host_port(url: str | None) -> tuple[str | None , int | None]:
     if not url:
         return None, None
     try:

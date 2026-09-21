@@ -1,18 +1,18 @@
-# Python cache and build artifacts
+# Python cache, test cache, and build artifacts
 __pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
-dist/
-build/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
 htmlcov/
 .ipynb_checkpoints/
+build/
+dist/
 
-# Virtual environments and local dependency folders
+# Local runtimes and dependency folders
 .venv/
 venv/
 env/
@@ -20,7 +20,7 @@ ENV/
 node_modules/
 .pnpm-store/
 
-# Editor and OS files
+# Editor, OS, and Codex-local files
 .DS_Store
 .vscode/
 .idea/
@@ -34,8 +34,8 @@ node_modules/
 !rag_frontend/.env.example
 
 # Runtime logs, pids, and temporary service files
-*.log
 *.pid
+*.log
 backend.log
 backend.pid
 rag_frontend/*.log
@@ -44,19 +44,18 @@ uvicorn*.log
 nohup.out
 rest_api.http
 
-# Generated answers, evaluation outputs, and checkpoints
-answer/
-code/answer/
+# Local generated answer/evaluation outputs outside the curated experiment folders
+/answer/
+/code/answer/
 *_answers.jsonl
 *_progress.jsonl
 *_questions.jsonl
 *_score_detail.csv
 *_score_summary.json
 
-# Raw/private data and generated normalized tables
-# Keep dataset documentation in the experiment/report folders instead.
-data/
-DATA/
+# Raw/private input data and generated normalized tables
+/data/
+/DATA/
 tmp_*.csv
 *_normalized.csv
 *.xlsx
@@ -81,7 +80,7 @@ models/
 model/
 neo4j*/
 
-# Large installers, archives, and downloaded tools
+# Large installers, downloaded archives, and local tools
 *.deb
 *.tar
 *.tar.gz
@@ -104,23 +103,18 @@ pnpm-debug.log*
 # Local backup folders produced during repository operations
 **/.git.bak_*/
 
-# Files intentionally kept trackable:
-# - README.md, start.txt, LICENSE
-# - requirements.txt, requirement_linux.txt, quick_test.sh
-# - rag_frontend/.env.example and other non-secret config examples
-# - 实验/, 优化实验/, 论文写作/, 论文证据/ and other explanation/report files
+# Curated experiment and writing/report folders are intentionally publishable.
+# They may contain csv/json/jsonl/log files that are part of the reproducible report.
+!/实验/
+!/实验/**
+!/优化实验/
+!/优化实验/**
+!/论文写作/
+!/论文写作/**
+!/论文证据/
+!/论文证据/**
 
-# Experiment and report folders are intentionally publishable even when they contain csv/json/log outputs.
-!实验/
-!实验/**
-!优化实验/
-!优化实验/**
-!论文写作/
-!论文写作/**
-!论文证据/
-!论文证据/**
-
-# But never publish nested repositories or dependency/build folders inside report folders.
+# Keep nested repositories, dependency folders, and build folders out even under report folders.
 **/.git/
 **/.git/**
 **/node_modules/
@@ -137,4 +131,4 @@ pnpm-debug.log*
 **/build/**
 
 # Too large for ordinary GitHub pushes; summary/detail metrics remain tracked.
-实验/对比实验/LLM/zenodo_floating_wind_fmea/表格上下文回答/实验结果/模型回答.jsonl
+/实验/对比实验/LLM/zenodo_floating_wind_fmea/表格上下文回答/实验结果/模型回答.jsonl

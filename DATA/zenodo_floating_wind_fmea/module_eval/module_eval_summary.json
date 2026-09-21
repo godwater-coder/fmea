@@ -1,0 +1,26 @@
+{
+  "base_file": "DATA/zenodo_floating_wind_fmea/scenario_qa_no_id/all_scenario_no_id_1500_questions.jsonl",
+  "csv": "DATA/zenodo_floating_wind_fmea/zenodo_fmea_project_import.csv",
+  "out": "DATA/zenodo_floating_wind_fmea/module_eval/all_module_eval_1900_questions.jsonl",
+  "total": 1900,
+  "base_total": 1500,
+  "extra_per_module": 100,
+  "module_counts": {
+    "M3_自然语言检索": 488,
+    "M1_编号直答": 600,
+    "M2_规则推理": 607,
+    "M4_证据裁决": 205
+  },
+  "base_module_counts": {
+    "M3_自然语言检索": 388,
+    "M1_编号直答": 500,
+    "M2_规则推理": 507,
+    "M4_证据裁决": 105
+  },
+  "extra_module_counts": {
+    "M1_编号直答": 100,
+    "M2_规则推理": 100,
+    "M3_自然语言检索": 100,
+    "M4_证据裁决": 100
+  }
+}

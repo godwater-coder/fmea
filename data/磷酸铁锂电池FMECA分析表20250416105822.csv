@@ -1,0 +1,27 @@
+﻿FmeaID,Product,AnalysisLevel,ProcessStep,FailureMode,FailureEffect,FailureCause,S,O,D,RPN,ActionPriority,PreventControl,DetectionMeasure,RecommendedAction,ActionStatus,ActionResult,Remark,Domain,DatasetID,ProjectID,SchemaVersion,SourceFile,SourceRowNo,ImportBatchID,TempMeasure
+LFP001,磷酸铁锂电池,DFMEA,动力电池,现场电池组无输出电压,电池组无法工作,1、电池组开路 2、未明确区分正负极 3、主电缆未连接、连接错误或器件损坏,7,3,3,63,,用颜色和材料区分,,现场更换损坏器件和改正错误,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,6,lfp_dfmea_20250416105822,现场更换损坏器件和改正错误
+LFP002,磷酸铁锂电池,DFMEA,动力电池,单体电压过低,影响用户使用,单节电池容量降低或损坏,7,4,6,168,,设定标准值,万用表测量,更换电压过低电池,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,7,lfp_dfmea_20250416105822,更换电压过低电池
+LFP003,磷酸铁锂电池,DFMEA,动力电池,巡航里程低于额定值,影响用户使用,电池组单节容量降低或整体过低,7,4,6,168,,设定标准值,充放电性能测试,更换电压过低电池,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,8,lfp_dfmea_20250416105822,更换电压过低电池
+LFP004,磷酸铁锂电池,DFMEA,电池组箱体,电池箱体进水,电池短路、电子器件失效或损坏、箱体生锈,电池箱体密封不严,7,3,6,126,,提高防护等级,绝缘检测,现场做防水处理,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,9,lfp_dfmea_20250416105822,现场做防水处理
+LFP005,磷酸铁锂电池,DFMEA,电池组箱体,电池箱体进灰尘,电子器件失效或损坏、影响电池组散热,电池箱体密封不严,7,2,6,84,,提高防护等级,绝缘检测,现场做防尘处理,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,10,lfp_dfmea_20250416105822,现场做防尘处理
+LFP006,磷酸铁锂电池,DFMEA,电池组箱体,电池组漏液,安全事故,电池组间隙大电池受到挤压碰撞震动,9,2,6,108,,,整体震动挤压试验,现场做防震处理,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,11,lfp_dfmea_20250416105822,现场做防震处理
+LFP007,磷酸铁锂电池,DFMEA,绝缘注塑件,注塑件起火,安全事故,绝缘注塑件不阻燃,10,1,6,20,,,阻燃、绝缘试验,更换绝缘注塑件,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,12,lfp_dfmea_20250416105822,更换绝缘注塑件
+LFP008,磷酸铁锂电池,DFMEA,电池壳体,电解液挥发,电池容量降低,电池壳体密封不严,7,2,6,84,,,,更换电池,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,13,lfp_dfmea_20250416105822,更换电池
+LFP009,磷酸铁锂电池,DFMEA,电池壳体,电池漏液,安全事故,外力损伤；碰撞、安装不规范造成密封结构破坏；制造原因：焊接缺陷、封合胶量不足造成密封性能不好。,9,2,6,108,,,单体震动挤压试验,更换电池,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,14,lfp_dfmea_20250416105822,更换电池
+LFP010,磷酸铁锂电池,DFMEA,高压箱,漏电,安全事故,无有效保护措施,10,2,6,120,,提高防护等级,漏电检测,现场做防护处理,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,15,lfp_dfmea_20250416105822,现场做防护处理
+LFP011,磷酸铁锂电池,DFMEA,高压箱,过电流,安全事故,使用电流高于额定电流不保护,9,2,5,18,,,过流保护,,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,16,lfp_dfmea_20250416105822,
+LFP012,磷酸铁锂电池,DFMEA,高压箱,输出不受控制,安全事故,元器件损坏,9,4,5,180,,,,更换损坏器件,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,17,lfp_dfmea_20250416105822,更换损坏器件
+LFP013,磷酸铁锂电池,DFMEA,高压箱,高压带电,安全事故,无有效保护措施,10,2,6,120,,提高防护等级,,,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,18,lfp_dfmea_20250416105822,
+LFP014,磷酸铁锂电池,DFMEA,高压箱,在负载连接的情况下意外开盖,安全事故,负载未断开、违规操作,9,2,5,90,,提高防护等级,,,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,19,lfp_dfmea_20250416105822,
+LFP015,磷酸铁锂电池,DFMEA,高压箱,充电时触电,安全事故,充电时继电器未断开,9,2,5,90,,提高防护等级,,,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,20,lfp_dfmea_20250416105822,
+LFP016,磷酸铁锂电池,DFMEA,热管理系统,电池组整体温度过高,影响电池工作,风道设计不合理,6,4,7,168,,,,增加散热,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,21,lfp_dfmea_20250416105822,增加散热
+LFP017,磷酸铁锂电池,DFMEA,热管理系统,电池组整体温度过低,影响电池工作,加热系统未工作或设计达不到要求,6,4,7,168,,,,更换加热系统,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,22,lfp_dfmea_20250416105822,更换加热系统
+LFP018,磷酸铁锂电池,DFMEA,热管理系统,噪音过大,影响乘车环境,风扇固定不牢靠或功率过高,3,5,8,120,,,,更换风扇,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,23,lfp_dfmea_20250416105822,更换风扇
+LFP019,磷酸铁锂电池,DFMEA,热管理系统,电池间温度一致性差,影响电池工作,通风方式不合理,4,5,7,140,,,,增加散热,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,24,lfp_dfmea_20250416105822,增加散热
+LFP020,磷酸铁锂电池,DFMEA,热管理系统,整体温度高，管理目标无法实现,影响电池工作,环境温度过高,4,3,7,84,,,,外部环境降温,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,25,lfp_dfmea_20250416105822,外部环境降温
+LFP021,磷酸铁锂电池,DFMEA,热管理系统,连接片过热,安全事故,连接片氧化、未压紧防松螺母连接电阻增加、截面积小或材质不纯,10,3,3,90,,,充放电性能测试,更换连接片或压紧防松螺母,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,26,lfp_dfmea_20250416105822,更换连接片或压紧防松螺母
+LFP022,磷酸铁锂电池,DFMEA,电池管理系,数据采样干扰性大和采样不准确,影响用户使用,电磁干扰，电路板虚焊或保护电阻损坏,4,6,5,120,,BMS 控制系统升级,老化试验,定期检查和更新BMS系统,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,27,lfp_dfmea_20250416105822,定期检查和更新BMS系统
+LFP023,磷酸铁锂电池,DFMEA,电池管理系,SOC异常,影响用户使用,BMS SOC算法不合理,4,6,6,144,,更换SOC算法,充放电性能测试,定期检查和更新BMS系统,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,28,lfp_dfmea_20250416105822,定期检查和更新BMS系统
+LFP024,磷酸铁锂电池,DFMEA,电池管理系,电池组过充未报警和未保护,安全事故,BMS 控制系统损坏,10,1,6,60,,BMS 控制系统升级,充放电性能测试,定期检查和更新BMS系统,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,29,lfp_dfmea_20250416105822,定期检查和更新BMS系统
+LFP025,磷酸铁锂电池,DFMEA,电池管理系,电池组过放未报警和未保护,影响电池寿命或永久性损坏,BMS 控制系统损坏,8,5,6,240,,BMS 控制系统升级,充放电性能测试,定期检查和更新BMS系统,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,30,lfp_dfmea_20250416105822,定期检查和更新BMS系统
+LFP026,磷酸铁锂电池,DFMEA,电池管理系,BMS通信异常,影响电池工作,通信线断裂、线路连接错误、受电磁干扰,4,5,6,120,,,,定期检查和更新BMS系统,,,,磷酸铁锂电池DFMEA,lfp_battery_dfmea,lfp_battery_dfmea_case,fmea_core_v1,Dfmea案例.xls,31,lfp_dfmea_20250416105822,定期检查和更新BMS系统

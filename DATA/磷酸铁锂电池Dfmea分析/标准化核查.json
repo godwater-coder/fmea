@@ -1,0 +1,61 @@
+{
+  "input": "DATA/磷酸铁锂电池Dfmea分析/Dfmea案例.xls",
+  "sheet": "dfmea",
+  "output": "data/磷酸铁锂电池FMECA分析表20250416105822.csv",
+  "rows": 26,
+  "columns": [
+    "FmeaID",
+    "Product",
+    "AnalysisLevel",
+    "ProcessStep",
+    "FailureMode",
+    "FailureEffect",
+    "FailureCause",
+    "S",
+    "O",
+    "D",
+    "RPN",
+    "ActionPriority",
+    "PreventControl",
+    "DetectionMeasure",
+    "RecommendedAction",
+    "ActionStatus",
+    "ActionResult",
+    "Remark",
+    "Domain",
+    "DatasetID",
+    "ProjectID",
+    "SchemaVersion",
+    "SourceFile",
+    "SourceRowNo",
+    "ImportBatchID",
+    "TempMeasure"
+  ],
+  "unique_fmea_ids": 26,
+  "missing_required": {
+    "ProcessStep": 0,
+    "FailureMode": 0
+  },
+  "numeric_ranges": {
+    "S": {
+      "min": 3.0,
+      "max": 10.0,
+      "nulls": 0
+    },
+    "O": {
+      "min": 1.0,
+      "max": 6.0,
+      "nulls": 0
+    },
+    "D": {
+      "min": 3.0,
+      "max": 8.0,
+      "nulls": 0
+    },
+    "RPN": {
+      "min": 18.0,
+      "max": 240.0,
+      "nulls": 0
+    }
+  }
+}

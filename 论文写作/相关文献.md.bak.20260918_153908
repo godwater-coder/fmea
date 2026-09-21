@@ -1,0 +1,671 @@
+# 相关文献
+
+## 筛选标准
+
+1. 时间优先选择 2024 年以后发表或预印本公开的研究。
+
+2. 主题优先选择 FMEA/FMECA、知识图谱、RAG、可信问答、表格问答和证据验证。
+
+3. 期刊优先选择 JCR、SCImago 或公开期刊信息中位于 Q1/Q2 的来源。
+
+4. 奠基性文献不受 2024 年限制。
+
+5. 分区信息需在最终论文提交前用学校图书馆、Web of Science 或中科院分区表复核。
+
+## 必读文献
+
+### 1. Bahr et al. (2025)
+
+**题名**：Knowledge graph enhanced retrieval-augmented generation for failure mode and effects analysis
+
+**引用标注名**：【Knowledge graph enhanced retrieval-augmented generation for failure mode and effects analysis】
+
+**来源**：Journal of Industrial Information Integration, 45, 100807.
+
+**分区判断**：Journal of Industrial Information Integration 公开指标显示为高影响工业信息集成期刊，JCR 最佳百分位约 92.8%，可按 Q1 候选处理。
+
+**链接**：https://doi.org/10.1016/j.jii.2025.100807
+
+**与本研究关系**：这是最接近本研究主题的直接文献。它把 FMEA、知识图谱和 RAG 结合起来，提出 FMEA 本体、FMEA-KG 向量嵌入和 KG-RAG 框架。
+
+**可用于论文位置**：第2章相关工作、第4章总体框架、第4.3节知识图谱构建。
+
+**可借鉴点**：说明 FMEA 表格工具缺少推理能力，说明 KG 能增强 RAG 对结构关系的利用。
+
+**本研究区别**：本文更强调异构表格标准化、Query IR 路由和证据裁决，不只关注 KG-RAG 检索性能。
+
+### 2. Li, Wang, and Rong (2024)
+
+**题名**：Combining improved DFMEA with knowledge graph for component risk analysis of complex products
+
+**引用标注名**：【Combining improved DFMEA with knowledge graph for component risk analysis of complex products】
+
+**来源**：Reliability Engineering & System Safety, 251, 110340.
+
+**分区判断**：Reliability Engineering & System Safety 公开指标显示 JCR 百分位约 98.2%，属于 Q1 候选。
+
+**链接**：https://doi.org/10.1016/j.ress.2024.110340
+
+**与本研究关系**：该文将改进 DFMEA 与知识图谱结合，用于复杂产品部件风险分析。
+
+**可用于论文位置**：第2章 FMEA 知识化研究、第4.3节知识图谱构建。
+
+**可借鉴点**：说明知识图谱适合表达 DFMEA 风险识别、历史维护数据和部件风险关系。
+
+**本研究区别**：该文重点是部件风险分析和权重计算，本文重点是异构 FMEA 可信问答。
+
+### 3. Xia, Jazdi, and Weyrich (2024)
+
+**题名**：Enhance FMEA with Large Language Models for Assisted Risk Management in Technical Processes and Products
+
+**引用标注名**：【Enhance FMEA with Large Language Models for Assisted Risk Management in Technical Processes and Products】
+
+**来源**：2024 IEEE 29th International Conference on Emerging Technologies and Factory Automation (ETFA).
+
+**分区判断**：该文为 IEEE ETFA 会议论文，不属于期刊 Q1/Q2 分区体系；正式论文中可按高相关会议文献引用，会议等级需按学校或学院评价口径复核。
+
+**链接**：https://doi.org/10.1109/ETFA61755.2024.10710996
+
+**与本研究关系**：该文直接讨论使用大语言模型辅助 FMEA 风险管理，主题与“LLM 如何增强 FMEA”高度相关。
+
+**可用于论文位置**：第1章引言、第2章相关工作、第4章方法对比。
+
+**可借鉴点**：可用于说明大语言模型已经被用于 FMEA 辅助分析，但直接使用 LLM 仍需处理证据可靠性、结构化输出和工程可验证性问题。
+
+**本研究区别**：该文侧重 LLM 辅助 FMEA 流程，本文进一步加入异构表格统一 schema、Query IR 路由和证据裁决机制。
+
+### 4. Younus et al. (2026)
+
+**题名**：AI- and Ontology-Based Enhancements to FMEA for Advanced Systems Engineering: Current Developments and Future Directions
+
+**引用标注名**：【AI- and Ontology-Based Enhancements to FMEA for Advanced Systems Engineering: Current Developments and Future Directions】
+
+**来源**：Applied Sciences, 16, 2464.
+
+**分区判断**：Applied Sciences 公开信息显示工程多学科方向为 Q2 候选。
+
+**链接**：https://doi.org/10.3390/app16052464
+
+**与本研究关系**：该综述讨论 AI、NLP、知识表示和 ontology 如何增强传统 FMEA。
+
+**可用于论文位置**：第2章相关工作、第6章不足与展望。
+
+**可借鉴点**：说明传统 FMEA 依赖人工、文档和专家经验，难以满足复杂系统工程需求。
+
+**本研究区别**：该文是综述，本文提供一个可运行的混合问答系统和实验结果。
+
+### 5. Peng et al. (2024)
+
+**题名**：Graph Retrieval-Augmented Generation: A Survey
+
+**引用标注名**：【Graph Retrieval-Augmented Generation: A Survey】
+
+**来源**：arXiv:2408.08921；后续版本可关注 ACM Computing Surveys 版本。
+
+**分区判断**：若采用 ACM Computing Surveys 版本，可按 Q1 候选；若只引用 arXiv，则不标注期刊分区。
+
+**链接**：https://arxiv.org/abs/2408.08921
+
+**与本研究关系**：该文系统总结 GraphRAG 的索引、检索和生成流程。
+
+**可用于论文位置**：第2章 GraphRAG 相关工作、第4.5节混合检索路由。
+
+**可借鉴点**：GraphRAG 利用实体关系结构，缓解普通向量 RAG 难以处理关系型知识的问题。
+
+**本研究区别**：本文没有做通用 GraphRAG 框架，而是面向 FMEA 表格和工程风险问答定制路线。
+
+### 6. Zhou et al. (2024/2026)
+
+**题名**：Trustworthiness in Retrieval-Augmented Generation Systems: A Survey
+
+**引用标注名**：【Trustworthiness in Retrieval-Augmented Generation Systems: A Survey】
+
+**来源**：arXiv:2409.10102；后续版本需复核正式出版信息。
+
+**分区判断**：当前可按关键预印本处理，不按 Q1/Q2 期刊文献处理。
+
+**链接**：https://arxiv.org/abs/2409.10102
+
+**与本研究关系**：该文把 RAG 可信性拆分为 factuality、robustness、fairness、transparency、accountability 和 privacy。
+
+**可用于论文位置**：第2章可信问答、第4.6节证据裁决。
+
+**可借鉴点**：其中 accountability 维度包含 source attribution、evidence verification 和 reasoning traceability，与本文的证据裁决高度相关。
+
+**本研究区别**：该文是通用 RAG 可信性框架，本文把可信性落到 FMEA 结构化证据、图关系证据和向量候选证据的裁决上。
+
+### 7. Lu et al. (2025)
+
+**题名**：Large language model for table processing: a survey
+
+**引用标注名**：【Large language model for table processing: a survey】
+
+**来源**：Frontiers of Computer Science, 19, 192350.
+
+**分区判断**：Frontiers of Computer Science 公开期刊信息显示为 Q1 候选，需按学校采用的 JCR 或中科院口径复核。
+
+**链接**：https://doi.org/10.1007/s11704-024-40763-6
+
+**与本研究关系**：该文总结 LLM 在表格问答、表格理解、电子表格处理和表格数据分析中的方法。
+
+**可用于论文位置**：第2章表格问答和表格标准化相关工作。
+
+**可借鉴点**：说明表格问答不仅是文本检索问题，还涉及结构识别、字段语义理解和复杂查询。
+
+**本研究区别**：本文不研究通用表格智能，而是把 FMEA 表格统一到项目级 schema 后进行可信问答。
+
+## 奠基性文献
+
+### 8. Press et al. (2023)
+
+**题名**：Measuring and Narrowing the Compositionality Gap in Language Models
+
+**引用标注名**：【Measuring and Narrowing the Compositionality Gap in Language Models】
+
+**来源**：Findings of EMNLP 2023；arXiv:2210.03350。
+
+**分区判断**：自然语言处理重要会议论文，不按期刊 Q1/Q2 标注。
+
+**链接**：https://arxiv.org/abs/2210.03350
+
+**与本研究关系**：该文提出 self-ask 思路，让模型把组合问题拆成后续子问题，并逐步回答。
+
+**可用于论文位置**：第2章查询中间表示与结构化路由、第4.4节 Query IR、第4.5节混合检索路由。
+
+**可借鉴点**：多跳问题不应直接一次性生成答案，而应先拆出中间查询步骤，再汇总中间答案。
+
+**本研究区别**：本文不依赖 LLM 自由生成子问题，而是针对 FMEA 字段关系构造可验证的结构化子查询。
+
+### 9. Tang and Yang (2024)
+
+**题名**：MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries
+
+**引用标注名**：【MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries】
+
+**来源**：COLM 2024；arXiv:2401.15391。
+
+**分区判断**：会议论文，最终等级需按学校或学院会议目录复核。
+
+**链接**：https://arxiv.org/abs/2401.15391
+
+**与本研究关系**：该文指出普通 RAG 在多跳查询中表现不足，因为答案需要跨多个证据片段检索和推理。
+
+**可用于论文位置**：第2章可信 RAG 与多跳问答、第5章实验设计。
+
+**可借鉴点**：多跳问答评价应同时关注答案正确性和支撑证据是否完整。
+
+**本研究区别**：本文将多跳证据限定在 FMEA 结构化字段和图关系中，减少开放域证据噪声。
+
+### 10. Zhang et al. (2024)
+
+**题名**：Hierarchical Retrieval-Augmented Generation Model with Rethink for Multi-hop Question Answering
+
+**引用标注名**：【Hierarchical Retrieval-Augmented Generation Model with Rethink for Multi-hop Question Answering】
+
+**来源**：arXiv:2408.11875。
+
+**分区判断**：预印本文献，不按期刊分区标注。
+
+**链接**：https://arxiv.org/abs/2408.11875
+
+**与本研究关系**：该文把多跳问答拆成 Decomposer、Definer、Retriever、Filter 和 Summarizer 等模块。
+
+**可用于论文位置**：第4.5节混合检索路由、第4.6节证据裁决。
+
+**可借鉴点**：多跳检索需要先定义子任务，再逐层检索和过滤证据，最后汇总答案。
+
+**本研究区别**：本文使用 FMEA schema 和 Query IR 直接定义子任务，不构建通用开放域层级检索器。
+
+### 11. Wang et al. (2025)
+
+**题名**：Chain-of-Retrieval Augmented Generation
+
+**引用标注名**：【Chain-of-Retrieval Augmented Generation】
+
+**来源**：arXiv:2501.14342。
+
+**分区判断**：预印本文献，不按期刊分区标注。
+
+**链接**：https://arxiv.org/abs/2501.14342
+
+**与本研究关系**：该文提出逐步检索和逐步推理的 Chain-of-Retrieval 思路，用于复杂知识密集型任务。
+
+**可用于论文位置**：第4.5节混合检索路由、第4.7节答案生成。
+
+**可借鉴点**：复杂问题可被拆成检索链，每一步检索结果成为下一步推理的中间状态。
+
+**本研究区别**：本文将检索链落到 FMEA 行记录、风险指标和失效关系上，形成可追溯的工程证据链。
+
+### 12. Lewis et al. (2020)
+
+**题名**：Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
+
+**引用标注名**：【Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks】
+
+**来源**：NeurIPS 2020.
+
+**分区判断**：顶级会议奠基文献，不按期刊 Q1/Q2 标注。
+
+**链接**：https://arxiv.org/abs/2005.11401
+
+**与本研究关系**：该文是 RAG 方法的代表性奠基文献。
+
+**可用于论文位置**：第2章检索增强生成。
+
+**可借鉴点**：说明外部非参数知识库可以增强语言模型回答知识密集型问题。
+
+### 13. Hogan et al. (2021)
+
+**题名**：Knowledge Graphs
+
+**引用标注名**：【Knowledge Graphs】
+
+**来源**：ACM Computing Surveys, 54(4), Article 71.
+
+**分区判断**：ACM Computing Surveys 公开指标显示为 Q1。
+
+**链接**：https://doi.org/10.1145/3447772
+
+**与本研究关系**：该文是知识图谱领域的重要综述。
+
+**可用于论文位置**：第2章知识图谱、第4.3节图谱构建。
+
+**可借鉴点**：用于解释实体、属性、关系、图查询和知识表示的基础概念。
+
+### 14. Ji et al. (2023)
+
+**题名**：Survey of Hallucination in Natural Language Generation
+
+**引用标注名**：【Survey of Hallucination in Natural Language Generation】
+
+**来源**：ACM Computing Surveys, 55(12), Article 248.
+
+**分区判断**：ACM Computing Surveys 公开指标显示为 Q1。
+
+**链接**：https://doi.org/10.1145/3571730
+
+**与本研究关系**：该文系统总结自然语言生成中的幻觉问题。
+
+**可用于论文位置**：第1章问题背景、第2章可信问答。
+
+**可借鉴点**：支撑“通用大语言模型可能产生无依据答案”的论述。
+
+### 15. AIAG & VDA (2019)
+
+**题名**：Failure Mode and Effects Analysis FMEA Handbook
+
+**引用标注名**：【Failure Mode and Effects Analysis FMEA Handbook】
+
+**来源**：AIAG & VDA 行业手册。
+
+**分区判断**：行业标准，不按期刊分区标注。
+
+**链接**：https://www.aiag.org/quality/automotive-core-tools/fmea
+
+**与本研究关系**：该手册是汽车行业 FMEA 字段和流程的重要规范来源。
+
+**可用于论文位置**：第3.1节 FMEA 相关行业规范、第4.2节统一 schema。
+
+**可借鉴点**：支撑 ProcessStep、FailureMode、FailureEffect、FailureCause、S、O、D、AP 和控制措施等字段设计。
+
+### 16. IEC 60812 (2018)
+
+**题名**：Failure modes and effects analysis (FMEA and FMECA)
+
+**引用标注名**：【IEC 60812: Failure modes and effects analysis (FMEA and FMECA)】
+
+**来源**：International Electrotechnical Commission.
+
+**分区判断**：国际标准，不按期刊分区标注。
+
+**链接**：https://webstore.iec.ch/publication/26359
+
+**与本研究关系**：该标准规定 FMEA/FMECA 分析技术，是 FMECA 数据解释的重要依据。
+
+**可用于论文位置**：第3.1节 FMEA 相关行业规范。
+
+**可借鉴点**：用于解释 FMEA 和 FMECA 的共同点、差异和工程使用边界。
+
+### 17. SAE J1739 (2021)
+
+**题名**：Potential Failure Mode and Effects Analysis in Design (Design FMEA), Potential Failure Mode and Effects Analysis in Manufacturing and Assembly Processes (Process FMEA), and Potential Failure Mode and Effects Analysis for Machinery (Machinery FMEA)
+
+**引用标注名**：【SAE J1739: Potential failure mode and effects analysis in design, manufacturing and assembly processes, and machinery】
+
+**来源**：SAE International 标准。
+
+**分区判断**：行业标准，不按期刊分区标注。
+
+**链接**：https://www.sae.org/standards/content/j1739_202101/
+
+**与本研究关系**：该标准覆盖设计 FMEA、过程 FMEA 和机械 FMEA，是制造业 FMEA 字段组织和风险评价的重要规范来源。
+
+**可用于论文位置**：第3.1节 FMEA 相关行业规范、第4.2节统一 schema。
+
+**可借鉴点**：支撑 DFMEA、PFMEA 和 MFMEA 中项目、功能、失效模式、后果、原因、控制措施和风险评价字段的共性抽取。
+
+### 14. MIL-STD-1629A (1980)
+
+**题名**：Procedures for Performing a Failure Mode, Effects and Criticality Analysis
+
+**引用标注名**：【MIL-STD-1629A: Procedures for performing a failure mode, effects and criticality analysis】
+
+**来源**：United States Department of Defense military standard.
+
+**分区判断**：军用标准，不按期刊分区标注；属于 FMECA 奠基性规范资料。
+
+**链接**：https://quicksearch.dla.mil/qsDocDetails.aspx?ident_number=3691
+
+**与本研究关系**：该标准系统规定 FMECA 的执行步骤和表格化记录要求，是理解 FMEA 与危害性分析关系的重要依据。
+
+**可用于论文位置**：第3.1节 FMEA 相关行业规范、第3.3节问题结构化定义。
+
+**可借鉴点**：支撑失效模式、失效影响、严重度、检测方法和补偿措施等字段作为风险知识结构的核心要素。
+
+### 15. NASA GSFC-HDBK-8004 (2002)
+
+**题名**：Performing a Failure Mode and Effects Analysis
+
+**引用标注名**：【NASA GSFC-HDBK-8004: Performing a failure mode and effects analysis】
+
+**来源**：NASA Goddard Space Flight Center handbook.
+
+**分区判断**：工程手册，不按期刊分区标注；属于航天可靠性工程中的关键参考资料。
+
+**链接**：https://standards.nasa.gov/standard/gsfc/gsfc-hdbk-8004
+
+**与本研究关系**：该手册面向航天系统 FMEA/FMECA 实施，强调 FMEA 是随设计信息、运行条件和工程知识更新的动态分析文件。
+
+**可用于论文位置**：第3.1节 FMEA 相关行业规范、第6章不足与展望。
+
+**可借鉴点**：支撑本文将 FMEA 数据视为可持续维护、可追踪、可复用的工程知识载体。
+
+## 备选文献
+
+### 16. ReDeEP (2024)
+
+**题名**：ReDeEP: Detecting Hallucination in Retrieval-Augmented Generation via Mechanistic Interpretability
+
+**引用标注名**：【ReDeEP: Detecting Hallucination in Retrieval-Augmented Generation via Mechanistic Interpretability】
+
+**来源**：arXiv:2410.11414。
+
+**分区判断**：预印本，不按期刊分区标注。
+
+**链接**：https://arxiv.org/abs/2410.11414
+
+**与本研究关系**：该文关注 RAG 场景中的幻觉检测。
+
+**可用于论文位置**：第2章可信 RAG、第4.6节证据裁决。
+
+**可借鉴点**：支撑“即使检索内容存在，生成阶段仍可能产生与证据冲突的答案”这一论点。
+
+### 17. A Knowledge Graph-Based Failure Information Fusion Method (2024)
+
+**题名**：A Knowledge Graph-Based Failure Information Fusion Method for Improving Decision Reliability
+
+**引用标注名**：【A Knowledge Graph-Based Failure Information Fusion Method for Improving Decision Reliability】
+
+**来源**：Sustainability, 16(23), 10651.
+
+**分区判断**：该期刊分区需复核；若学校要求严格 Q1/Q2，可暂不列入正式参考文献。
+
+**链接**：https://doi.org/10.3390/su162310651
+
+**与本研究关系**：该文使用知识图谱融合失效信息，用于提升决策可靠性。
+
+**可用于论文位置**：第2章 FMEA 知识图谱相关工作。
+
+**可借鉴点**：可补充说明故障信息融合和知识图谱在可靠性决策中的应用。
+
+## 查询中间表示与证据裁决补充文献
+
+### 18. Liu et al. (2025)
+
+**题名**：A Survey of Text-to-SQL in the Era of LLMs: Where Are We, and Where Are We Going?
+
+**引用标注名**：【A Survey of Text-to-SQL in the Era of LLMs: Where Are We, and Where Are We Going?】
+
+**来源**：IEEE Transactions on Knowledge and Data Engineering, 37(10): 5735-5754.
+
+**分区判断**：IEEE TKDE 为数据库与知识工程方向高水平期刊，可按 Q1 候选处理，正式分区需复核。
+
+**链接**：https://doi.org/10.1109/TKDE.2025.3592032
+
+**与本研究关系**：该综述系统总结 Text-to-SQL 在大语言模型时代的问题理解、schema 理解、SQL 生成和执行评估流程。
+
+**可用于论文位置**：第2章查询中间表示相关工作、第4.4节 FMEA 问题意图解析与 Query IR。
+
+**可借鉴点**：支撑“自然语言问题需要先转化为结构化查询表示，再执行底层数据查询”的技术路线。
+
+### 19. Hong et al. (2025)
+
+**题名**：Next-Generation Database Interfaces: A Survey of LLM-based Text-to-SQL
+
+**引用标注名**：【Next-Generation Database Interfaces: A Survey of LLM-based Text-to-SQL】
+
+**来源**：IEEE Transactions on Knowledge and Data Engineering, 37(12): 7328-7345.
+
+**分区判断**：IEEE TKDE 为数据库与知识工程方向高水平期刊，可按 Q1 候选处理，正式分区需复核。
+
+**链接**：https://doi.org/10.1109/TKDE.2025.3609486
+
+**与本研究关系**：该综述从数据库接口角度总结 LLM-based Text-to-SQL 的技术挑战，强调自然语言理解、数据库 schema 理解和查询生成之间的耦合关系。
+
+**可用于论文位置**：第2章查询中间表示相关工作、第4.4节 Query IR。
+
+**可借鉴点**：支撑“用户问题不能直接等同于可执行查询，需要经过 schema-aware 的结构化转换”。
+
+### 20. Zhang et al. (2024)
+
+**题名**：Natural Language Interfaces for Tabular Data Querying and Visualization: A Survey
+
+**引用标注名**：【Natural Language Interfaces for Tabular Data Querying and Visualization: A Survey】
+
+**来源**：IEEE Transactions on Knowledge and Data Engineering, 36(11): 6699-6718.
+
+**分区判断**：IEEE TKDE 为数据库与知识工程方向高水平期刊，可按 Q1 候选处理，正式分区需复核。
+
+**链接**：https://doi.org/10.1109/TKDE.2024.3400824
+
+**与本研究关系**：该综述讨论自然语言接口如何面向表格数据完成查询和可视化，并强调语义解析是自然语言到 SQL 或可视化命令转换的关键技术。
+
+**可用于论文位置**：第2章表格问答、第4.4节 Query IR。
+
+**可借鉴点**：支撑 FMEA 表格问答需要处理字段语义、表格结构和自然语言查询之间的映射。
+
+### 21. Gao et al. (2024)
+
+**题名**：Text-to-SQL Empowered by Large Language Models: A Benchmark Evaluation
+
+**引用标注名**：【Text-to-SQL Empowered by Large Language Models: A Benchmark Evaluation】
+
+**来源**：Proceedings of the VLDB Endowment, 17(5): 1132-1145.
+
+**分区判断**：PVLDB 为数据库领域顶级会议/期刊化论文来源，可按高水平会议论文处理。
+
+**链接**：https://doi.org/10.14778/3641204.3641221
+
+**与本研究关系**：该文评估 LLM 在 Text-to-SQL 任务中的能力，说明问题表示、样例组织和 schema 信息对结构化查询生成有重要影响。
+
+**可用于论文位置**：第2章查询中间表示相关工作、第4.4节 Query IR。
+
+**可借鉴点**：支撑 Query IR 中保留意图、实体、指标、约束和输出类型的必要性。
+
+### 22. Yu et al. (2018)
+
+**题名**：Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Semantic Parsing and Text-to-SQL Task
+
+**引用标注名**：【Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Semantic Parsing and Text-to-SQL Task】
+
+**来源**：EMNLP 2018.
+
+**分区判断**：EMNLP 为自然语言处理领域顶级会议；该文为 Text-to-SQL 和跨域语义解析奠基性数据集论文。
+
+**链接**：https://aclanthology.org/D18-1425/
+
+**与本研究关系**：该文提出跨数据库、复杂查询的 Text-to-SQL 数据集，推动了自然语言到结构化查询的研究。
+
+**可用于论文位置**：第2章查询中间表示相关工作。
+
+**可借鉴点**：支撑“跨域结构化查询需要显式理解 schema 和查询意图”的论述。
+
+### 23. Guo et al. (2019)
+
+**题名**：Towards Complex Text-to-SQL in Cross-Domain Database with Intermediate Representation
+
+**引用标注名**：【Towards Complex Text-to-SQL in Cross-Domain Database with Intermediate Representation】
+
+**来源**：ACL 2019.
+
+**分区判断**：ACL 为自然语言处理领域顶级会议；该文为中间表示用于 Text-to-SQL 的关键文献。
+
+**链接**：https://aclanthology.org/P19-1444/
+
+**与本研究关系**：该文提出 IRNet，通过中间表示降低自然语言到 SQL 直接转换的复杂度。
+
+**可用于论文位置**：第2章查询中间表示相关工作、第4.4节 Query IR。
+
+**可借鉴点**：直接支撑本文使用 Query IR 作为自然语言问题与底层查询路径之间的中间层。
+
+### 24. Sankararaman et al. (2024)
+
+**题名**：Provenance: A Light-weight Fact-checker for Retrieval Augmented LLM Generation Output
+
+**引用标注名**：【Provenance: A Light-weight Fact-checker for Retrieval Augmented LLM Generation Output】
+
+**来源**：EMNLP 2024 Industry Track.
+
+**分区判断**：EMNLP 为自然语言处理领域顶级会议；Industry Track 可按高相关会议论文处理。
+
+**链接**：https://aclanthology.org/2024.emnlp-industry.97/
+
+**与本研究关系**：该文提出面向 RAG 输出的轻量级事实检查方法，用于判断生成结果是否受到检索上下文支持。
+
+**可用于论文位置**：第2章证据裁决相关工作、第4.6节基于证据的答案裁决机制。
+
+**可借鉴点**：支撑“检索结果与最终答案之间需要独立验证环节”的论述。
+
+### 25. Qi et al. (2024)
+
+**题名**：Model Internals-based Answer Attribution for Trustworthy Retrieval-Augmented Generation
+
+**引用标注名**：【Model Internals-based Answer Attribution for Trustworthy Retrieval-Augmented Generation】
+
+**来源**：EMNLP 2024.
+
+**分区判断**：EMNLP 为自然语言处理领域顶级会议。
+
+**链接**：https://arxiv.org/abs/2406.13663
+
+**与本研究关系**：该文提出 MIRAGE，通过模型内部信息完成 RAG 答案归因，将生成答案与检索文档建立更细粒度对应关系。
+
+**可用于论文位置**：第2章证据裁决相关工作、第4.6节证据裁决。
+
+**可借鉴点**：支撑“答案可信性不仅取决于是否检索到上下文，还取决于答案内容是否能归因到具体证据”。
+
+### 26. Qian et al. (2025)
+
+**题名**：VeriCite: Towards Reliable Citations in Retrieval-Augmented Generation via Rigorous Verification
+
+**引用标注名**：【VeriCite: Towards Reliable Citations in Retrieval-Augmented Generation via Rigorous Verification】
+
+**来源**：SIGIR-AP 2025.
+
+**分区判断**：SIGIR 系列会议为信息检索领域高水平会议；SIGIR-AP 分区需按学校会议评价口径复核。
+
+**链接**：https://doi.org/10.1145/3767695.3769505
+
+**与本研究关系**：该文关注 RAG 引用可靠性，通过严格验证提升答案引用与支撑证据之间的一致性。
+
+**可用于论文位置**：第2章证据裁决相关工作、第4.6节证据裁决。
+
+**可借鉴点**：支撑本文在答案返回前检查证据充分性和证据一致性的必要性。
+
+### 27. Ge et al. (2025)
+
+**题名**：Resolving Conflicting Evidence in Automated Fact-Checking: A Study on Retrieval-Augmented LLMs
+
+**引用标注名**：【Resolving Conflicting Evidence in Automated Fact-Checking: A Study on Retrieval-Augmented LLMs】
+
+**来源**：IJCAI 2025.
+
+**分区判断**：IJCAI 为人工智能领域顶级会议。
+
+**链接**：https://doi.org/10.24963/ijcai.2025/1073
+
+**与本研究关系**：该文研究 RAG 在面对冲突证据时的事实检查可靠性，说明不同来源证据之间的矛盾会降低问答可信度。
+
+**可用于论文位置**：第2章证据裁决相关工作、第4.6节证据冲突处理。
+
+**可借鉴点**：直接支撑本文证据裁决中对冲突证据进行检测和拒答的设计。
+
+## 建议引用顺序
+
+1. 第1章引言优先引用 Ji et al. (2023)、Xia et al. (2024)、Bahr et al. (2025)、Li et al. (2024)。
+
+2. 第2章 FMEA 相关工作优先引用 AIAG & VDA (2019)、IEC 60812 (2018)、SAE J1739 (2021)、MIL-STD-1629A (1980)、NASA GSFC-HDBK-8004 (2002)、Younus et al. (2026)。
+
+3. 第2章知识图谱优先引用 Hogan et al. (2021)、Li et al. (2024)、Bahr et al. (2025)。
+
+4. 第2章 RAG 相关工作优先引用 Lewis et al. (2020)、Peng et al. (2024)、Zhou et al. (2024/2026)。
+
+5. 第2章表格问答优先引用 Lu et al. (2025)。
+
+6. 第4章方法对比优先引用 Xia et al. (2024)、Bahr et al. (2025)、Peng et al. (2024)、Zhou et al. (2024/2026)。
+
+7. 第2章查询中间表示相关工作优先引用 Liu et al. (2025)、Hong et al. (2025)、Zhang et al. (2024)、Gao et al. (2024)、Yu et al. (2018)、Guo et al. (2019)。
+
+8. 第2章证据裁决相关工作优先引用 Sankararaman et al. (2024)、Qi et al. (2024)、Qian et al. (2025)、Ge et al. (2025)、ReDeEP (2024)、Zhou et al. (2024/2026)。
+
+## 正式参考文献格式草稿
+
+[1] Bahr L, Wehner C, Wewerka J, Bittencourt J, Schmid U, Daub R. Knowledge graph enhanced retrieval-augmented generation for failure mode and effects analysis[J]. Journal of Industrial Information Integration, 2025, 45: 100807.
+
+[2] Li S, Wang J, Rong J. Combining improved DFMEA with knowledge graph for component risk analysis of complex products[J]. Reliability Engineering & System Safety, 2024, 251: 110340.
+
+[3] Xia Y, Jazdi N, Weyrich M. Enhance FMEA with large language models for assisted risk management in technical processes and products[C]. 2024 IEEE 29th International Conference on Emerging Technologies and Factory Automation (ETFA), 2024.
+
+[4] Younus H, Kabir S, Campean F, Bonnaud P, Delaux D. AI- and ontology-based enhancements to FMEA for advanced systems engineering: Current developments and future directions[J]. Applied Sciences, 2026, 16(5): 2464.
+
+[5] Peng B, Zhu Y, Liu Y, Bo X, Shi H, Hong C, Zhang Y, Tang S. Graph retrieval-augmented generation: A survey[EB/OL]. arXiv:2408.08921, 2024.
+
+[6] Zhou Y, Zhang W, Shao J, Liu Y, Li X, Jin J, Qian H, Liu Z, Li C, Zhang J C, Dou Z, Yu P S, Mao J. Trustworthiness in retrieval-augmented generation systems: A survey[EB/OL]. arXiv:2409.10102, 2024.
+
+[7] Lu W, Zhang J, Fan J, Fu Z, Chen Y, Du X. Large language model for table processing: A survey[J]. Frontiers of Computer Science, 2025, 19: 192350.
+
+[8] Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W, Rocktäschel T, Riedel S, Kiela D. Retrieval-augmented generation for knowledge-intensive NLP tasks[C]. NeurIPS, 2020.
+
+[9] Hogan A, Blomqvist E, Cochez M, D'Amato C, Melo G, Gutierrez C, Kirrane S, Gayo J E L, Navigli R, Neumaier S, Ngomo A C N, Polleres A, Rashid S M, Rula A, Schmelzeisen L, Sequeda J, Staab S, Zimmermann A. Knowledge graphs[J]. ACM Computing Surveys, 2021, 54(4): 71.
+
+[10] Ji Z, Lee N, Frieske R, Yu T, Su D, Xu Y, Ishii E, Bang Y J, Madotto A, Fung P. Survey of hallucination in natural language generation[J]. ACM Computing Surveys, 2023, 55(12): 248.
+
+[11] AIAG, VDA. Failure Mode and Effects Analysis FMEA Handbook[S]. Automotive Industry Action Group, 2019.
+
+[12] IEC. IEC 60812: Failure modes and effects analysis (FMEA and FMECA)[S]. International Electrotechnical Commission, 2018.
+
+[13] SAE International. SAE J1739: Potential failure mode and effects analysis in design, manufacturing and assembly processes, and machinery[S]. SAE International, 2021.
+
+[14] United States Department of Defense. MIL-STD-1629A: Procedures for performing a failure mode, effects and criticality analysis[S]. Department of Defense, 1980.
+
+[15] NASA Goddard Space Flight Center. GSFC-HDBK-8004: Performing a failure mode and effects analysis[S]. NASA, 2002.
+
+[16] Liu X, Shen S, Li B, Ma P, Jiang R, Zhang Y, Fan J, Li G, Tang N, Luo Y. A survey of Text-to-SQL in the era of LLMs: Where are we, and where are we going?[J]. IEEE Transactions on Knowledge and Data Engineering, 2025, 37(10): 5735-5754.
+
+[17] Hong Z, Yuan Z, Zhang Q, Chen H, Dong J, Huang F, Huang X. Next-generation database interfaces: A survey of LLM-based Text-to-SQL[J]. IEEE Transactions on Knowledge and Data Engineering, 2025, 37(12): 7328-7345.
+
+[18] Zhang W, Wang Y, Song Y, Wei V J, Tian Y, Qi Y, Chan J H, Wong R C W, Yang H. Natural language interfaces for tabular data querying and visualization: A survey[J]. IEEE Transactions on Knowledge and Data Engineering, 2024, 36(11): 6699-6718.
+
+[19] Gao D, Wang H, Li Y, Sun X, Qian Y, Ding B, Zhou J. Text-to-SQL empowered by large language models: A benchmark evaluation[J]. Proceedings of the VLDB Endowment, 2024, 17(5): 1132-1145.
+
+[20] Yu T, Zhang R, Yang K, Yasunaga M, Wang D, Li Z, Ma J, Li I, Yao Q, Roman S, Zhang Z, Radev D. Spider: A large-scale human-labeled dataset for complex and cross-domain semantic parsing and Text-to-SQL task[C]. EMNLP, 2018.
+
+[21] Guo J, Zhan Z, Gao Y, Xiao Y, Lou J G, Liu T, Zhang D. Towards complex Text-to-SQL in cross-domain database with intermediate representation[C]. ACL, 2019.
+
+[22] Sankararaman H, Yasin M N, Sorensen T, Di Bari A, Stolcke A. Provenance: A light-weight fact-checker for retrieval augmented LLM generation output[C]. EMNLP Industry Track, 2024.
+
+[23] Qi J, Sarti G, Fernández R, Bisazza A. Model internals-based answer attribution for trustworthy retrieval-augmented generation[C]. EMNLP, 2024.
+
+[24] Qian H, Fan Y, Zhu H. VeriCite: Towards reliable citations in retrieval-augmented generation via rigorous verification[C]. SIGIR-AP, 2025.
+
+[25] Ge Z, Wu Y, Chin D W K, Lee R K W, Cao R. Resolving conflicting evidence in automated fact-checking: A study on retrieval-augmented LLMs[C]. IJCAI, 2025.

@@ -1,130 +1,244 @@
-启动步骤（Linux / conda）
+# FMEA KG-RAG 使用启动文档
 
-进入项目根目录：cd /home/godwater/fmea
-激活环境（必须是这个环境）：conda activate kg-rag-fmea
-启动后端服务：python code/kg_rag.py（服务默认监听 http://127.0.0.1:8080）
-启动前检查（一次性）
+conda activate fmea
 
-确认 Neo4j 可用，并在 .env 里配置了 NEO4J_URL/NEO4J_USERNAME/NEO4J_PASSWORD/NEO4J_DATABASE
-如果你用镜像站（如 gptsapi），在 .env 里配置 OPENAI_BASE_URL（或 OPENAI_API_BASE）+ OPENAI_API_KEY
-依赖安装（只在环境缺包时需要）：pip install -r requirements.txt
-启动后怎么验证接口
+- Neo4j：存储 FMEA 知识图谱。
+- Ollama：提供 embedding 和大模型问答能力。
 
-curl -sS -X POST http://127.0.0.1:8080/api/v1/question-answer -H 'Content-Type: application/json' -d '{"question":"What is the average RPN for all failure modes"}'建图（用示例数据）：curl -sS -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph -H 'Content-Type: application/json' -d '{"path":"data/example_fmea.csv"}'
-提问：
-设置 top_k：curl -sS -X POST http://127.0.0.1:8080/api/v1/set-top_k -H 'Content-Type: application/json' -d '{"top_k":5}'
-项目自带入口/说明
+确认 Neo4j 可访问：
 
-启动脚本参考： start.sh
-接口定义： api.yml
-说明文档： README.md
-补充提醒：你的 .env 里含有明文密钥/密码，建议不要提交到 git，并在需要时及时轮换。
+```bash
+cypher-shell -a bolt://127.0.0.1:7687 -u neo4j -p <你的Neo4j密码> "RETURN 1 AS ok;"
+```
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+确认 Ollama 可访问：
 
-启动环境和后端服务（python code/kg_rag.py 看到 8080 正常监听）之后，按这个顺序做就行：
+```bash
+curl http://127.0.0.1:11434/api/tags
+```
 
-1.建图（把你的 FMEA CSV 灌进 Neo4j，并建立向量索引）
-示例数据：
-curl -sS -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph -H 'Content-Type: application/json' -d '{"path":"data/dfmea_final.csv"}'
-你自己的数据：把 path 换成你的 csv 路径（相对项目根目录或绝对路径都可）
-2.提问验证（确认 RAG 流程通了）
-curl -sS -X POST http://127.0.0.1:8080/api/v1/question-answer -H 'Content-Type: application/json' -d '{"question":"平均RPN是多少?"}'
-3.需要更多/更少结果就调 top_k
+确认 embedding 模型已安装：
 
-curl -sS -X POST http://127.0.0.1:8080/api/v1/set-top_k -H 'Content-Type: application/json' -d '{"top_k":5}'
-4.开始用你关心的问题做分析
-例如："Which process step has most failure modes?"、"List failure causes for Electrical short" 等
+```bash
+ollama list
+```
 
-当你“提问”（调用 /api/v1/question-answer）时，后端的运行链路大致分 6 步：路由→前置检查→（优先）图查询检索→（兜底）向量检索→摘要压缩→最终生成答案。
+当前推荐 embedding 模型：
 
-1) 请求怎么进到代码里
+```text
+nomic-embed-text
+```
 
-你发的 POST /api/v1/question-answer 会按 OpenAPI 配置映射到 api.yml:27-48 里的 operationId: kg_rag.answer_question
-Connexion 启动时加载这个 API 定义并把请求分发到 kg_rag.py:872-876 里注册的接口函数（同名 answer_question）
-2) 服务里有一个常驻的 RAG 实例
+## 3. 配置环境变量
 
-进程启动时会创建全局单例 rag_service = KGRAGService()，它会一直常驻内存（包含 Neo4j 连接、向量检索能力、top_k、prompt 上下文等）
-见 kg_rag.py:812-818
-3) API 层拿到 question 后调用核心逻辑
+根目录 `.env` 至少需要这些字段：
 
-API handler 取出 question，然后调用 rag_service.answer_question(question)
-见 kg_rag.py:841-860
-4) 核心问答：先做前置检查
-
-空问题直接拒绝（400）
-如果 Neo4j 里还没有 FailureMode 节点，就认为“未建图”，返回 409，并提示先调用建图接口
-检查逻辑在 kg_rag.py:356-364，问答入口在 kg_rag.py:757-777
-5) 检索阶段：优先“让模型写 Cypher 去查图”，不行再用向量检索兜底
-
-(a) 让 LLM 生成 Cypher
-
-把你的问题塞进“生成 Cypher 的 prompt”上下文 context_cypher（里面还带了图 schema）
-见 kg_rag.py:383-400 与 kg_rag.py:781-799
-调用 run_inference 请求 LLM（OPENAI_MODEL 默认 gpt-4o-mini，base_url 用 OPENAI_API_BASE/OPENAI_BASE_URL）
-见 kg_rag.py:433-494
-从模型回复里提取   包起来的 Cypher，并先跑一次 validate_cypher 试执行验证
-见 code/kg_rag.py、code/kg_rag.py
-如果可用：执行该 Cypher 得到图查询结果，并按 top_k 截断
-(b) 如果 Cypher 无效或查不到结果：走向量检索
-
-调用 similarity_search(question, k=top_k)（Neo4jVector 在 Neo4j 里做向量近邻检索）
-见 code/kg_rag.py
-6) 生成阶段：先“摘要压缩检索结果”，再“用摘要回答”
-
-对每条检索结果（无论来自图查询还是向量检索），先用 ANSWER_SUMMARIZE_TEMPLATE 做一次摘要（减少噪声、方便后续回答）
-见 code/kg_rag.py、code/kg_rag.py
-把“问题 + 多条摘要”塞进最终 QA prompt（CYPHER_QA_TEMPLATE），再调用一次 run_inference 生成最终自然语言回答（temperature=1.0）
-见 code/kg_rag.py、code/kg_rag.py
-返回给前端/调用方：answer（最终答案）+ context（摘要）+ context_raw（原始检索结果）
-见 code/kg_rag.py
-补充：你之前“建图”做了什么，为什么后面能向量检索
-
-建图接口把 CSV 每行 MERGE 成 5 类节点 + 4 类关系，然后为每个 FailureMode 生成一段“chunk 文本”，写入 Neo4j 的向量索引，并把 FailureMode 与 Chunk 用 :isIndexed 关系连起来，供 similarity_search 使用
-见 code/kg_rag.py
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-训练是谁做的？
-
-大模型（比如你这里默认 OPENAI_MODEL=gpt-4o-mini）是在 OpenAI（或你配置的 OPENAI_API_BASE/OPENAI_BASE_URL 服务方）那边提前训练好的。
-你每次调用只是“推理/生成”（inference），输入 prompt，模型输出回答。
-
-你的数据起什么作用？
-
-你的 FMEA CSV 数据被你“建图”写进 Neo4j，并建立向量索引。
-提问时程序先去 Neo4j 检索相关内容（图查询或向量相似检索），把检索到的内容拼进 prompt，发给大模型，让它“基于检索到的上下文”生成答案。
-这叫 RAG（检索增强生成）：用数据做“外部知识库”，不是用数据去训练/微调模型。
-什么时候才算“训练/微调”？
-
-如果你要让模型长期学会某种风格/规则/领域知识，一般需要**微调（fine-tuning）**或其它训练方式（这套代码目前没做）。
-你现在做的是“把最新数据喂给模型作为上下文”，所以数据更新后无需训练，只要重建图/索引即可。
-
-
-
-这套系统的工作流程可以概括为以下几个核心步骤：
-提问：用户提出一个关于FMEA的专业问题（例如，“某型号电池的潜在失效模式有哪些？”）。
-检索：系统不会直接把整个知识图谱扔给大模型。相反，它先用用户的问题去检索知识图谱（特别是其向量嵌入库），找到与问题最相关的几段信息（即“知识片段”或“上下文”）。
-增强：系统将检索到的相关FMEA知识和用户的原始问题组合在一起，形成一个新的、更丰富的提示词。
-生成：这个组合好的提示词被发送给通用的、未经FMEA专门训练的大模型（如GPT-4）。大模型基于这个“被知识增强过的”提示词来生成回答。
-
-cd FluxPanel/flux-frontend/
-npm run dev -- --port 5173 --
-
-http://localhost:5173/#/fmea-qa
-
-本地 Neo4j 已经装好并跑起来了。
-
-当前状态：
-
-已通过官方 APT 仓库安装 Neo4j 2026.05.0
-服务状态是 active (running)
-本地监听地址是 127.0.0.1:7474 和 127.0.0.1:7687
-已把本地 neo4j 账号密码改成 12345678
-已验证新密码可以通过 Bolt 正常登录
-你现在可以用这些本地连接信息：
-
+```env
 NEO4J_URL=bolt://127.0.0.1:7687
 NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=12345678
+NEO4J_PASSWORD=<你的Neo4j密码>
 NEO4J_DATABASE=neo4j
+
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_API_BASE=http://127.0.0.1:11434/v1
+OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+```
+
+不要把真实密码提交到 GitHub。
+
+## 4. 本地启动后端
+
+```bash
+cd /home/lizhaoxuan/fmea
+conda run -n fmea python code/kg_rag.py
+```
+
+默认后端地址：
+
+```text
+http://127.0.0.1:8080/api/v1
+```
+
+后端健康测试：
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/question-answer \
+  -H "Content-Type: application/json" \
+  -d '{"question":"失效模式“单体电压过低”的RPN是多少？"}'
+```
+
+## 5. 导入 FMEA CSV 建图
+
+先启动后端，再执行：
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/create-fmea-graph \
+  -H "Content-Type: application/json" \
+  -d '{"path":"data/磷酸铁锂电池FMECA分析表20250416105822.csv"}'
+```
+
+成功时返回：
+
+```json
+true
+```
+
+## 6. 启动前端界面
+
+```bash
+cd /home/lizhaoxuan/fmea/rag_frontend
+FMEA_API_BASE=http://127.0.0.1:8080/api/v1 conda run -n fmea python server.py
+```
+
+浏览器打开：
+
+```text
+http://127.0.0.1:5000
+```
+
+## 7. 公网访问启动方式
+
+后端公网监听：
+
+```bash
+KG_RAG_HOST=0.0.0.0 \
+KG_RAG_PORT=8080 \
+KG_RAG_CORS_ORIGINS="*" \
+conda run -n fmea python code/kg_rag.py
+```
+
+前端公网启动：
+
+```bash
+cd /home/lizhaoxuan/fmea/rag_frontend
+FMEA_API_BASE=http://<你的公网IP>:8080/api/v1 \
+conda run -n fmea python server.py
+```
+
+公网访问：
+
+```text
+http://<你的公网IP>:5000
+```
+
+公网后端 API：
+
+```text
+http://<你的公网IP>:8080/api/v1
+```
+
+如果使用云服务器，需要在安全组或防火墙中放行：
+
+```text
+8080
+5000
+```
+
+公网长期使用时，不建议裸露接口。
+建议加 Nginx、HTTPS 和鉴权。
+
+## 8. 常用接口
+
+问答：
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/question-answer \
+  -H "Content-Type: application/json" \
+  -d '{"question":"失效模式“电池箱体进水”的潜在失效后果是什么？"}'
+```
+
+设置 top_k：
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/set-top_k \
+  -H "Content-Type: application/json" \
+  -d '{"top_k":5}'
+```
+
+清空图谱：
+
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/clear-fmea-graph \
+  -H "Content-Type: application/json" \
+  -d '{"confirm":true}'
+```
+
+## 9. CSV 标准化脚本
+
+转换磷酸铁锂 FMECA 表：
+
+```bash
+cd /home/lizhaoxuan/fmea
+conda run -n fmea python csv_trans/normalize_fmea.py \
+  data/磷酸铁锂电池FMECA分析表20250416105822.csv \
+  --output data/lfp_normalized.csv \
+  --format csv
+```
+
+转换电子元器件失效模式表：
+
+```bash
+cd /home/lizhaoxuan/fmea
+conda run -n fmea python csv_trans/normalize_fmea.py \
+  data/电子元器件及故障模式.xlsx \
+  --output data/electronic_components_normalized.csv \
+  --format csv
+```
+
+注意：电子元器件表是多 sheet、跨行继承的知识表。
+当前标准化效果弱于标准 FMEA 表。
+
+## 10. 批量测试与打分
+
+磷酸铁锂 500 题打分：
+
+```bash
+cd /home/lizhaoxuan/fmea
+conda run -n fmea python scripts/score_dfmea_qa.py \
+  --csv data/磷酸铁锂电池FMECA分析表20250416105822.csv \
+  --questions answer/lfp_fmeca_500_questions.jsonl \
+  --predictions answer/lfp_fmeca_500_answers.jsonl \
+  --out-csv answer/lfp_fmeca_500_score_detail.csv \
+  --out-json answer/lfp_fmeca_500_score_summary.json
+```
+
+标准 DFMEA 100 题打分：
+
+```bash
+cd /home/lizhaoxuan/fmea
+conda run -n fmea python scripts/score_dfmea_qa.py \
+  --csv data/dfmea_std.csv \
+  --questions answer/dfmea_std_100_questions.jsonl \
+  --predictions answer/dfmea_std_100_answers.jsonl \
+  --out-csv answer/dfmea_std_100_score_detail.csv \
+  --out-json answer/dfmea_std_100_score_summary.json
+```
+
+## 11. 常见问题
+
+后端启动失败并提示 Neo4j：
+
+```text
+检查 NEO4J_URL、NEO4J_USERNAME、NEO4J_PASSWORD、NEO4J_DATABASE。
+```
+
+后端启动失败并提示 Embedding：
+
+```text
+检查 Ollama 是否启动，以及 OLLAMA_EMBEDDING_MODEL 是否已安装。
+```
+
+公网 IP 无法访问：
+
+```text
+检查 KG_RAG_HOST 是否为 0.0.0.0。
+检查云服务器安全组是否放行 8080 和 5000。
+检查本机防火墙是否放行端口。
+```
+
+问答返回知识图谱未初始化：
+
+```text
+先调用 create-fmea-graph 导入 CSV。
+```

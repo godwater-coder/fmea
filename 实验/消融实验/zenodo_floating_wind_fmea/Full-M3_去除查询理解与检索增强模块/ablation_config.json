@@ -1,0 +1,14 @@
+{
+  "model_id": "Full-M3",
+  "model_name": "Full-M3去除查询理解与检索增强模块",
+  "removed_module": "M3 查询理解与检索增强模块",
+  "description": "关闭 QueryIR 查询意图解析、语义检索预处理与排序增强，以及口语化/模糊问题优先 RAG 路由。",
+  "env": {
+    "QA_ENABLE_CSV_BASIC": "1",
+    "QA_ENABLE_DETERMINISTIC_RULES": "1",
+    "QA_ENABLE_QUERY_IR": "0",
+    "QA_ENABLE_EVIDENCE_ADJUDICATION": "1",
+    "QA_ENABLE_KG_CHUNK_ANSWER_EXTRACTION": "1",
+    "QA_ENABLE_SEMANTIC_RETRIEVAL_ENHANCEMENT": "0"
+  }
+}

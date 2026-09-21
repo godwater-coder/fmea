@@ -1,0 +1,14 @@
+{
+  "model_id": "Full-M4",
+  "model_name": "Full-M4去除证据检查与路由裁决模块",
+  "removed_module": "M4 证据检查与路由裁决模块",
+  "description": "关闭证据检查、路由裁决与 KG chunk 抽取式回答模块，保留 CSV直答、确定性规则问答、QueryIR 和语义检索增强。",
+  "env": {
+    "QA_ENABLE_CSV_BASIC": "1",
+    "QA_ENABLE_DETERMINISTIC_RULES": "1",
+    "QA_ENABLE_QUERY_IR": "1",
+    "QA_ENABLE_EVIDENCE_ADJUDICATION": "0",
+    "QA_ENABLE_KG_CHUNK_ANSWER_EXTRACTION": "0",
+    "QA_ENABLE_SEMANTIC_RETRIEVAL_ENHANCEMENT": "1"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "model_id": "baseline",
+  "model_name": "baseline模型",
+  "removed_module": "baseline兼容旧逻辑",
+  "description": "使用 legacy 兼容 CSV 与旧式默认路径的 baseline 复现实验。",
+  "env": {
+    "QA_ENABLE_CSV_BASIC": "0",
+    "QA_ENABLE_DETERMINISTIC_RULES": "0",
+    "QA_ENABLE_QUERY_IR": "0",
+    "QA_ENABLE_EVIDENCE_ADJUDICATION": "0",
+    "QA_ENABLE_SEMANTIC_RETRIEVAL_ENHANCEMENT": "0"
+  }
+}

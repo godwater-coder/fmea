@@ -1,0 +1,8 @@
+{
+  "model_id": "PureLLM",
+  "model_name": "PureLLM直接回答(qwen2.5:7b)",
+  "removed_module": "无KG/RAG/CSV/规则系统",
+  "description": "不使用知识图谱、RAG、CSV直答、确定性规则或证据裁决，仅由本地 Ollama 大模型根据题面直接作答。",
+  "llm_model": "qwen2.5:7b",
+  "ollama_base_url": "http://127.0.0.1:11434"
+}

@@ -1,0 +1,14 @@
+{
+  "model_id": "Full-SigmaMi",
+  "model_name": "Full-ΣMi残差模型",
+  "removed_module": "M1+M2+M3+M4",
+  "description": "关闭 CSV直答、确定性规则问答、QueryIR 与语义检索增强、证据检查与路由裁决、KG chunk 抽取式回答，用于验证 Full-ΣMi 是否接近固定 Baseline。",
+  "env": {
+    "QA_ENABLE_CSV_BASIC": "0",
+    "QA_ENABLE_DETERMINISTIC_RULES": "0",
+    "QA_ENABLE_QUERY_IR": "0",
+    "QA_ENABLE_EVIDENCE_ADJUDICATION": "0",
+    "QA_ENABLE_KG_CHUNK_ANSWER_EXTRACTION": "0",
+    "QA_ENABLE_SEMANTIC_RETRIEVAL_ENHANCEMENT": "0"
+  }
+}

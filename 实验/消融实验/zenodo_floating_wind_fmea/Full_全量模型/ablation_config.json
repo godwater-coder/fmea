@@ -1,0 +1,14 @@
+{
+  "model_id": "Full",
+  "model_name": "Full全量模型",
+  "removed_module": "无",
+  "description": "当前完整 FMEA KG-RAG 模型，保留 M1 CSV直答模块、M2 确定性规则问答模块、M3 查询理解与检索增强模块、M4 证据检查与路由裁决模块。",
+  "env": {
+    "QA_ENABLE_CSV_BASIC": "1",
+    "QA_ENABLE_DETERMINISTIC_RULES": "1",
+    "QA_ENABLE_QUERY_IR": "1",
+    "QA_ENABLE_EVIDENCE_ADJUDICATION": "1",
+    "QA_ENABLE_KG_CHUNK_ANSWER_EXTRACTION": "1",
+    "QA_ENABLE_SEMANTIC_RETRIEVAL_ENHANCEMENT": "1"
+  }
+}

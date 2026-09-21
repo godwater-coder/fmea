@@ -1,56 +1,140 @@
-# Python
-*.pyc
+# Python cache and build artifacts
 __pycache__/
-venv/
-.venv/
+*.py[cod]
+*$py.class
 *.egg-info/
 dist/
 build/
-
-# Python tooling
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
-
-# Jupyter
 .ipynb_checkpoints/
 
-# Mac
-.DS_Store
-
-# Nested git backups (local)
-**/.git.bak_*/
-
-# VSCode
-.vscode/
-
-# JetBrains
-.idea/
-
-# Environment
-.env
-
-# Ruff
-.ruff_cache/
-
-# Node / Frontend
+# Virtual environments and local dependency folders
+.venv/
+venv/
+env/
+ENV/
 node_modules/
+.pnpm-store/
+
+# Editor and OS files
+.DS_Store
+.vscode/
+.idea/
+.agents/
+.codex/
+
+# Secrets and machine-local environment files
+.env
+.env.*
+!.env.example
+!rag_frontend/.env.example
+
+# Runtime logs, pids, and temporary service files
+*.log
+*.pid
+backend.log
+backend.pid
+rag_frontend/*.log
+rag_frontend/*.pid
+uvicorn*.log
+nohup.out
+rest_api.http
+
+# Generated answers, evaluation outputs, and checkpoints
+answer/
+code/answer/
+*_answers.jsonl
+*_progress.jsonl
+*_questions.jsonl
+*_score_detail.csv
+*_score_summary.json
+
+# Raw/private data and generated normalized tables
+# Keep dataset documentation in the experiment/report folders instead.
+data/
+DATA/
+tmp_*.csv
+*_normalized.csv
+*.xlsx
+*.xls
+*.csv
+
+# Local databases, graph/vector indexes, and model artifacts
+*.db
+*.sqlite
+*.sqlite3
+*.graphml
+*.parquet
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.pt
+*.pth
+*.bin
+*.safetensors
+models/
+model/
+neo4j*/
+
+# Large installers, archives, and downloaded tools
+*.deb
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+sing-box-*/
+sing-box-*.tar.gz
+get-pip.py
+
+# Frontend build output and package-manager logs
+.vite/
+.cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-.pnpm-store/
 
-# Frontend build output
-dist/
-build/
-.vite/
-.cache/
+# Local backup folders produced during repository operations
+**/.git.bak_*/
 
-rest_api.http
-# Local-only ignore (repo will only commit selected files)
+# Files intentionally kept trackable:
+# - README.md, start.txt, LICENSE
+# - requirements.txt, requirement_linux.txt, quick_test.sh
+# - rag_frontend/.env.example and other non-secret config examples
+# - 实验/, 优化实验/, 论文写作/, 论文证据/ and other explanation/report files
+
+# Experiment and report folders are intentionally publishable even when they contain csv/json/log outputs.
+!实验/
+!实验/**
+!优化实验/
+!优化实验/**
+!论文写作/
+!论文写作/**
+!论文证据/
+!论文证据/**
+
+# But never publish nested repositories or dependency/build folders inside report folders.
+**/.git/
+**/.git/**
 **/node_modules/
-**/.vite/
+**/node_modules/**
+**/__pycache__/
+**/__pycache__/**
+**/.venv/
+**/.venv/**
+**/venv/
+**/venv/**
 **/dist/
+**/dist/**
 **/build/
+**/build/**
+
+# Too large for ordinary GitHub pushes; summary/detail metrics remain tracked.
+实验/对比实验/LLM/zenodo_floating_wind_fmea/表格上下文回答/实验结果/模型回答.jsonl

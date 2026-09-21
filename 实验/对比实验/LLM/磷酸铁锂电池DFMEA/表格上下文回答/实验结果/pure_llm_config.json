@@ -1,0 +1,10 @@
+{
+  "model_id": "PureLLM",
+  "model_name": "PureLLM表格上下文回答(qwen2.5:7b)",
+  "removed_module": "无KG/RAG/数据库/确定性规则系统",
+  "description": "不使用知识图谱、RAG、数据库查询、CSV直答、确定性规则或证据裁决；每题将完整 CSV 文本随 prompt 提供给本地 Ollama 大模型，由模型自行阅读表格并回答。",
+  "llm_model": "qwen2.5:7b",
+  "ollama_base_url": "http://127.0.0.1:11434",
+  "context_csv": "data/磷酸铁锂电池FMECA分析表20250416105822.csv",
+  "num_ctx": 32768
+}

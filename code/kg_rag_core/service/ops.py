@@ -3,12 +3,10 @@
 # 该文件提供服务运维与通用能力，包括 CSV 读取、索引维护、图操作与 LLM 调用工具方法。
 
 from os import getenv
-from datetime import datetime
 import time
 import re
 import collections
 import json
-import os
 from pathlib import Path
 from types import SimpleNamespace
 import requests
@@ -93,7 +91,7 @@ class ServiceOpsMixin:
     def _get_default_dfmea_df(self) -> pd.DataFrame | None:
         path = self._default_dfmea_csv_path()
         if not path:
-            return None
+            return self._dfmea_cache_df
         if self._dfmea_cache_df is not None and self._dfmea_cache_path == path:
             return self._dfmea_cache_df
         df = self._read_dfmea_csv(path)
@@ -136,14 +134,195 @@ class ServiceOpsMixin:
         s = str(value).strip()
         return "" if s.lower() == "nan" else s
 
+    def _csv_row_context_raw(self, row: pd.Series) -> dict[str, str]:
+        out: dict[str, str] = {}
+        for col in row.index:
+            text = self._csv_text(row, str(col))
+            if text:
+                out[str(col)] = text
+        return out
+
+    def _recover_csv_evidence(self, question: str) -> list[dict[str, str]]:
+        """Recover the matched CSV row for direct answers that only returned labels."""
+        q = str(question or "").strip()
+        rows = None
+        codes = self._extract_fmea_codes(q)
+        if codes:
+            rows = self._csv_rows_by_code(codes[0])
+
+        if rows is None or rows.empty:
+            _, mode = self._extract_project_mode_pair(q)
+            if not mode:
+                quoted = self._extract_quoted_values(q)
+                mode = quoted[-1] if quoted else ""
+            if mode:
+                rows = self._csv_rows_by_mode(mode)
+
+        if rows is None or rows.empty:
+            return []
+        return [
+            self._csv_row_context_raw(row)
+            for _, row in rows.head(3).iterrows()
+            if self._csv_row_context_raw(row)
+        ]
+
+    def _format_evidence_context(self, context_raw: object) -> list[str]:
+        """Expose raw evidence as scorer-visible, human-readable context items."""
+        if not isinstance(context_raw, list):
+            context_raw = [context_raw] if context_raw else []
+        formatted: list[str] = []
+        for item in context_raw:
+            text = self._format_context_for_answer([item]).strip()
+            if text:
+                formatted.append(text)
+        return formatted
+
+    def _normalize_evidence_payload(self, payload: dict, question: str = "") -> dict:
+        """Prefer complete evidence rows over route labels in the API payload."""
+        result = dict(payload or {})
+        context_raw = result.get("context_raw") or []
+        if not context_raw and str(result.get("route") or "") == "csv_basic":
+            context_raw = self._recover_csv_evidence(question)
+            if context_raw:
+                result["context_raw"] = context_raw
+
+        visible_context = self._format_evidence_context(context_raw)
+        if visible_context:
+            result["context"] = visible_context
+        return result
+
+    @staticmethod
+    def _question_requests_all_risk_metrics(question: str) -> bool:
+        q = str(question or "")
+        q_upper = q.upper()
+        asks_sod = "SOD" in q_upper or "S/O/D" in q_upper or "S、O、D" in q_upper
+        has_rpn = "RPN" in q_upper or "风险优先数" in q or "风险分" in q or "危险分" in q
+        has_s = asks_sod or bool(re.search(r"(?<![A-Z])S(?![A-Z])", q_upper)) or "严重度" in q or "严酷度" in q
+        has_o = asks_sod or bool(re.search(r"(?<![A-Z])O(?![A-Z])", q_upper)) or "发生度" in q or "频度" in q
+        has_d = asks_sod or bool(re.search(r"(?<![A-Z])D(?![A-Z])", q_upper)) or "探测度" in q or "可探测度" in q
+        return has_rpn and has_s and has_o and has_d
+
+    @staticmethod
+    def _same_failure_mode_text(left: str, right: str) -> bool:
+        a = str(left or "").strip()
+        b = str(right or "").strip()
+        return bool(a and b and (a == b or a in b or b in a))
+
+    def _answer_csv_record_by_question(
+        self,
+        question: str,
+        row: pd.Series,
+        requested_code: str = "",
+        requested_mode: str = "",
+    ) -> dict | None:
+        q = str(question or "").strip()
+
+        def pick(*cols: str) -> str:
+            for col in cols:
+                if col in row.index:
+                    return self._csv_text(row, col)
+            return ""
+
+        code = requested_code or pick("FmeaID", "FMEA编号")
+        mode = pick("FailureMode", "潜在失效模式")
+        if requested_mode and not self._same_failure_mode_text(requested_mode, mode):
+            return None
+
+        project = pick("ProcessStep", "项目/功能")
+        cause = pick("FailureCause", "潜在失效原因/机理")
+        effect = pick("FailureEffect", "潜在失效后果")
+        prevent = pick("PreventControl", "现行预防控制")
+        detect = pick("DetectionMeasure", "现行探测控制")
+        action = pick("RecommendedAction", "建议措施", "TempMeasure")
+        s_val = pick("S", "严酷度(S)")
+        o_val = pick("O", "发生度(O)")
+        d_val = pick("D", "可探测度(D)")
+        rpn = pick("RPN", "风险优先数(RPN)")
+
+        subject = f"FMEA编号“{code}”"
+        if mode:
+            subject += f"对应的失效模式“{mode}”"
+        context = ["route=csv_basic", f"FmeaID={code}", f"FailureMode={mode}"]
+        context_raw = [self._csv_row_context_raw(row)]
+
+        def result(answer: str) -> dict:
+            return {"answer": answer, "context": context, "context_raw": context_raw}
+
+        def yes_no(condition: bool, detail: str) -> dict:
+            prefix = "是。" if condition else "否。"
+            return result(prefix + detail)
+
+        quoted = re.findall(r"[“\"'‘]([^”\"'’]+)[”\"'’]", q)
+        targets = [str(value or "").strip() for value in quoted if str(value or "").strip().upper() != str(code).upper()]
+        if "是否" in q and targets:
+            target = targets[-1]
+            if "原因" in q or "机理" in q:
+                return yes_no(target == cause or target in cause, f"{subject}的潜在失效原因/机理是：{cause}。")
+            if "后果" in q or "影响" in q:
+                return yes_no(target == effect or target in effect, f"{subject}的潜在失效后果是：{effect}。")
+            if "建议措施" in q or ("措施" in q and "控制" not in q):
+                return yes_no(target == action or target in action, f"{subject}的建议措施是：{action or '未记录'}。")
+            if "项目/功能" in q or "项目" in q:
+                return yes_no(target == project or target in project, f"{subject}所属项目/功能是：{project}。")
+
+        if self._question_requests_all_risk_metrics(q):
+            return result(f"{subject}的S、O、D、RPN分别是：S={s_val}；O={o_val}；D={d_val}；RPN={rpn}。")
+        if ("完整风险画像" in q) or ("风险画像" in q):
+            return result(
+                f"{subject}的风险画像为：项目/功能={project}；失效后果={effect}；"
+                f"S={s_val}；O={o_val}；D={d_val}；RPN={rpn}。"
+            )
+        if ("后果" in q or "影响" in q) and ("RPN" in q.upper() or "风险优先数" in q):
+            parts = []
+            if project and "项目" in q:
+                parts.append(f"项目/功能={project}")
+            parts.append(f"失效后果={effect}")
+            parts.append(f"RPN={rpn}")
+            return result(f"{subject}：" + "；".join(parts) + "。")
+        if "潜在失效原因/机理" in q or "原因" in q or "机理" in q:
+            return result(f"{subject}的潜在失效原因/机理是：{cause}。")
+        if (
+            "建议措施" in q
+            or ("措施" in q and "控制" not in q)
+            or any(x in q for x in ("建议怎么", "怎么处理", "处理", "处置", "改进"))
+        ):
+            return result(f"{subject}的建议措施是：{action or '未记录'}。")
+        if "潜在失效后果" in q or "失效后果" in q or "后果" in q or "影响" in q:
+            return result(f"{subject}的潜在失效后果是：{effect}。")
+        if "现行预防控制" in q or "现行探测控制" in q:
+            return result(f"{subject}的现行预防控制是：{prevent or '未记录'}；现行探测控制是：{detect or '未记录'}。")
+        if "RPN" in q.upper() or "风险优先数" in q:
+            return result(f"{subject}的RPN是：{rpn}。")
+        if "严酷度S" in q or "严重度S" in q or re.search(r"(?<![A-Z])S(?![A-Z])", q.upper()):
+            return result(f"{subject}的严重度S是：{s_val}。")
+        if "发生度O" in q or re.search(r"(?<![A-Z])O(?![A-Z])", q.upper()):
+            return result(f"{subject}的发生度O是：{o_val}。")
+        if "可探测度D" in q or "探测度D" in q or re.search(r"(?<![A-Z])D(?![A-Z])", q.upper()):
+            return result(f"{subject}的可探测度D是：{d_val}。")
+        return None
+
     def _try_answer_basic_csv_lookup(self, question: str) -> dict | None:
         q = str(question or "").strip()
         if not q:
             return None
-        quoted = re.findall(r"[“\"'‘]([^”\"'’]+)[”\"'’]", q)
-        if not quoted:
+        mode_markers = (
+            "失效模式",
+            "故障现象",
+            "失效现象",
+            "毛病",
+            "问题",
+            "啥问题",
+            "什么坏",
+            "坏在哪",
+        )
+        if any(x in q for x in ("建议", "措施", "处理")) and (
+            any(self._extract_sod_triplet(q))
+            or self._extract_numeric_value(q, "RPN", "风险优先数", "风险分", "危险分")
+            or self._extract_numeric_value(q, "发生度O", "发生度", "频度O", "O")
+            or self._extract_numeric_value(q, "探测难度D", "现行探测难度D", "可探测度D", "探测度D", "D")
+            or self._extract_numeric_value(q, "严酷度S", "严重度S", "S")
+        ):
             return None
-
         def yes_no(condition: bool, detail: str) -> dict:
             prefix = "是。" if condition else "否。"
             return {"answer": prefix + detail, "context": ["route=csv_basic"], "context_raw": []}
@@ -154,18 +333,38 @@ class ServiceOpsMixin:
                     return self._csv_text(row, col)
             return ""
 
+        quoted = re.findall(r"[“\"'‘]([^”\"'’]+)[”\"'’]", q)
+        codes = self._extract_fmea_codes(q)
+        if codes and ("编号" in q or "FMEA" in q.upper()):
+            code_q = codes[0]
+            rows = self._csv_rows_by_code(code_q)
+            if rows is not None and not rows.empty:
+                mode_q = ""
+                if any(marker in q for marker in mode_markers):
+                    for value in quoted:
+                        if str(value or "").strip().upper() != code_q:
+                            mode_q = str(value or "").strip()
+                            break
+                answer = self._answer_csv_record_by_question(q, rows.iloc[0], requested_code=code_q, requested_mode=mode_q)
+                if answer is not None:
+                    return answer
+
+        if not quoted:
+            return None
+
         if "FMEA编号" in q and "对应的失效模式" in q:
-            rows = self._csv_rows_by_code(quoted[0])
+            code_q = codes[0] if codes else quoted[0]
+            rows = self._csv_rows_by_code(code_q)
             if rows is None or rows.empty:
                 return None
             row = rows.iloc[0]
             mode = pick(row, "FailureMode", "潜在失效模式")
-            return {"answer": f"FMEA编号“{quoted[0]}”对应的失效模式是：{mode}。", "context": ["route=csv_basic"], "context_raw": []}
+            return {"answer": f"FMEA编号“{code_q}”对应的失效模式是：{mode}。", "context": ["route=csv_basic", f"FmeaID={code_q}", f"FailureMode={mode}"], "context_raw": [self._csv_row_context_raw(row)]}
 
-        if "失效模式" not in q:
+        if not any(marker in q for marker in mode_markers):
             return None
 
-        if "项目/功能" in q and "中是否包含失效模式" in q and len(quoted) >= 2:
+        if "项目/功能" in q and "是否" in q and "包含" in q and len(quoted) >= 2 and any(marker in q for marker in mode_markers):
             project_q = quoted[0]
             mode_q = quoted[1]
             df = self._get_default_dfmea_df()
@@ -179,7 +378,8 @@ class ServiceOpsMixin:
             ]
             return yes_no(not matched.empty, f"项目/功能“{project_q}”{'包含' if not matched.empty else '不包含'}失效模式“{mode_q}”。")
 
-        mode = quoted[0]
+        project_q, mode_q = self._extract_project_mode_pair(q)
+        mode = mode_q or (quoted[1] if project_q and len(quoted) >= 2 else quoted[0])
         rows = self._csv_rows_by_mode(mode)
         if rows is None or rows.empty:
             return None
@@ -244,6 +444,96 @@ class ServiceOpsMixin:
                     normalized = str(value or "").strip()
                     return yes_no(target in normalized if marker == "原因是否包含" else target == normalized, detail)
         return None
+
+    def _try_answer_structured_clue_rule(self, question: str) -> dict | None:
+        q = str(question or "").strip()
+        if not q:
+            return None
+        project, mode = self._extract_project_mode_pair(q)
+        cause, effect = self._extract_cause_effect_pair(q)
+        mode_pair, effect_pair = self._extract_mode_effect_pair(q)
+        if not mode and mode_pair:
+            mode = mode_pair
+        if not effect and effect_pair:
+            effect = effect_pair
+        s_val, o_val, d_val = self._extract_sod_triplet(q)
+        s_val = s_val or self._extract_numeric_value(q, "严酷度S", "严重度S", "S")
+        o_val = o_val or self._extract_numeric_value(q, "发生度O", "发生度", "频度O", "O")
+        d_val = d_val or self._extract_numeric_value(q, "探测难度D", "现行探测难度D", "可探测度D", "探测度D", "D")
+        rpn_val = self._extract_numeric_value(q, "RPN", "风险优先数", "风险分", "危险分")
+
+        asks_action = any(x in q for x in ("建议", "措施", "处理", "预防", "缓解", "处置"))
+        asks_cause = any(x in q for x in ("原因", "机理"))
+        asks_effect = any(x in q for x in ("后果", "影响", "结果", "会怎样", "造成"))
+        asks_all_metrics = self._question_requests_all_risk_metrics(q)
+
+        if asks_action and (project or mode or cause or effect or any((s_val, o_val, d_val, rpn_val))):
+            return self._answer_action_by_mode_profile(
+                project=project,
+                mode_name=mode,
+                cause=cause,
+                effect=effect,
+                s_val=s_val,
+                o_val=o_val,
+                d_val=d_val,
+                rpn=rpn_val,
+            )
+        if asks_cause and project and mode and effect:
+            return self._answer_cause_by_project_mode_effect(project, mode, effect)
+        if asks_cause and project and mode and any((s_val, o_val, d_val)):
+            return self._answer_cause_by_project_mode_sod(project, mode, s_val, o_val, d_val)
+        if asks_cause and mode and effect and rpn_val:
+            return self._answer_cause_by_mode_effect_rpn(mode, effect, rpn_val)
+        if asks_cause and mode and effect and d_val:
+            return self._answer_cause_by_mode_effect_detection(mode, effect, d_val)
+        if asks_cause and cause and effect:
+            return self._answer_cause_by_cause_effect(cause, effect)
+        if asks_effect and project and mode:
+            return self._answer_risk_impact_by_project_mode(project, mode, effect=effect, rpn=rpn_val)
+        if asks_all_metrics and cause and effect:
+            rows = self._query_failure_mode_rows(cause=cause, effect=effect)
+            if rows:
+                return {
+                    "answer": self._format_failure_mode_rows_answer(rows, include_numbers=True),
+                    "context": [f"FailureCause={cause}", f"FailureEffect={effect}", f"match_count={len(rows)}"],
+                    "context_raw": rows,
+                }
+        return None
+
+    def _should_prioritize_semantic_rag(self, question: str) -> bool:
+        """证据形态判据：判断该问题的证据是否仅能通过语义近似取得。
+
+        若证据具备明确的可定位结构（编号、引号实体、字段词），则交由
+        直答 / 规则 / 图查询等确定性路径处理（返回 False，不优先语义）；
+        仅在证据缺乏任何可定位结构时，才走语义召回（返回 True）。
+        """
+        q = self._normalize_query_text(str(question or "").strip())
+        if not q:
+            return False
+
+        # 1) 证据显式存在：FMEA 编号
+        if self._extract_fmea_codes(q):
+            return False
+
+        # 2) 证据显式/关系存在：引号内的精确实体（失效模式/原因/后果/项目等）
+        if self._extract_quoted_values(q):
+            return False
+
+        # 3) 证据可确定构造：明确字段词
+        field_terms = (
+            "潜在失效原因", "失效原因", "原因", "机理",
+            "建议措施", "处理措施", "改进措施", "措施", "处理",
+            "潜在失效后果", "失效后果", "后果", "影响",
+            "风险画像", "RPN", "风险优先数", "风险分", "危险分", "风险数",
+            "SOD", "S、O、D", "S/O/D", "严酷度", "严重度", "发生度", "探测度", "可探测度",
+            "失效模式", "故障现象", "潜在失效",
+            "项目/功能", "设计项目", "预防控制", "探测控制",
+        )
+        if any(t in q for t in field_terms):
+            return False
+
+        # 4) 证据缺乏可定位结构：仅语义可及
+        return True
 
     def _ensure_vector_index(self) -> None:
         """Ensure the Neo4j VECTOR index exists (and is ONLINE).
@@ -449,29 +739,7 @@ class ServiceOpsMixin:
 
     @staticmethod
     def _save_answer_to_file(answer_text: str) -> str:
-        timestamp = datetime.now().strftime("%y%m%d_%H_%M")
-        base_filename = f"{timestamp}.txt"
-
-        default_dir = os.path.join(os.getcwd(), "answer")
-        output_dir = os.getenv("ANSWER_OUTPUT_DIR", default_dir)
-        os.makedirs(output_dir, exist_ok=True)
-
-        file_path = os.path.join(output_dir, base_filename)
-        if os.path.exists(file_path):
-            # 同一分钟多次提问：避免覆盖/混写，追加一个自增序号
-            idx = 1
-            while True:
-                candidate = os.path.join(output_dir, f"{timestamp}_{idx:02d}.txt")
-                if not os.path.exists(candidate):
-                    file_path = candidate
-                    break
-                idx += 1
-
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(str(answer_text))
-            f.write("\n")
-
-        return file_path
+        return ""
 
     @staticmethod # 静态方法
     # 从大模型输出文本里提取 ... 代码块中的 Cypher 语句，用于后续 self.query(cypher_query) 执行查询
@@ -626,27 +894,242 @@ class ServiceOpsMixin:
         return q.replace("的的", "的")
 
     @staticmethod
+    def _extract_fmea_codes(text: str) -> list[str]:
+        q = str(text or "").upper()
+        return re.findall(r"(?<![A-Z0-9])[A-Z]{1,4}\d{1,4}(?![A-Z0-9])", q)
+
+    @staticmethod
     def _extract_quoted_values(question: str) -> list[str]:
         return [str(x).strip() for x in re.findall(r"[“\"'‘]([^”\"'’]+)[”\"'’]", question or "") if str(x).strip()]
+
+    @staticmethod
+    def _normalize_match_text(value: str) -> str:
+        s = str(value or "").strip().lower()
+        typo_replacements = {
+            "stucture": "structure",
+            "structrue": "structure",
+            "primay": "primary",
+        }
+        for wrong, right in typo_replacements.items():
+            s = s.replace(wrong, right)
+        s = re.sub(r"\([^)]*\)", "", s)
+        s = re.sub(r"[\s\u3000]+", "", s)
+        s = re.sub(r"[\(\)（）\[\]【】{}<>《》,，。；;:：'\"“”‘’`~!@#$%^&*_+=|\\/?.，、-]+", "", s)
+        return s
+
+    @classmethod
+    def _text_match_loose(cls, left: str, right: str) -> bool:
+        return cls._text_match_score(left, right) > 0
+
+    @classmethod
+    def _text_match_score(cls, left: str, right: str) -> int:
+        a = cls._normalize_match_text(left)
+        b = cls._normalize_match_text(right)
+        if not a or not b:
+            return 0
+        if a == b:
+            return 4
+        if a in b or b in a:
+            return 2
+        return 0
+
+    @staticmethod
+    def _extract_numeric_value(question: str, *labels: str) -> str:
+        q = str(question or "")
+        for label in labels:
+            if len(label) == 1 and label.upper() in {"S", "O", "D"}:
+                letter = re.escape(label)
+                patterns = [
+                    rf"(?<![A-Za-z]){letter}(?![A-Za-z])\s*[=:：为是]\s*([0-9]+(?:\.[0-9]+)?)",
+                    rf"(?<![A-Za-z]){letter}(?![A-Za-z])\s*[^A-Za-z0-9]{{0,4}}\s*([0-9]+(?:\.[0-9]+)?)",
+                ]
+            else:
+                patterns = [
+                    rf"{re.escape(label)}\s*[=:：为是]\s*([0-9]+(?:\.[0-9]+)?)",
+                    rf"{re.escape(label)}[^0-9]{{0,8}}([0-9]+(?:\.[0-9]+)?)",
+                ]
+            for pattern in patterns:
+                m = re.search(pattern, q, re.IGNORECASE)
+                if m:
+                    return m.group(1).strip()
+        return ""
+
+    @classmethod
+    def _extract_sod_triplet(cls, question: str) -> tuple[str, str, str]:
+        q = str(question or "")
+        patterns = [
+            r"S\s*[/、,，]\s*O\s*[/、,，]\s*D\s*(?:分别[为是]|是|为|=|：)\s*([0-9]+(?:\.[0-9]+)?)\s*[/、,，]\s*([0-9]+(?:\.[0-9]+)?)\s*[/、,，]\s*([0-9]+(?:\.[0-9]+)?)",
+            r"S\s*[=:：]\s*([0-9]+(?:\.[0-9]+)?)\s*.*?O\s*[=:：]\s*([0-9]+(?:\.[0-9]+)?)\s*.*?D\s*[=:：]\s*([0-9]+(?:\.[0-9]+)?)",
+            r"严酷度\s*S\s*[=:：为是]?\s*([0-9]+(?:\.[0-9]+)?)\s*.*?发生度\s*O\s*[=:：为是]?\s*([0-9]+(?:\.[0-9]+)?)\s*.*?(?:探测度|可探测度)\s*D\s*[=:：为是]?\s*([0-9]+(?:\.[0-9]+)?)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, q, re.IGNORECASE)
+            if m:
+                return m.group(1).strip(), m.group(2).strip(), m.group(3).strip()
+        return "", "", ""
+
+    @classmethod
+    def _extract_cause_effect_pair(cls, question: str) -> tuple[str, str]:
+        q = str(question or "")
+        patterns = [
+            (
+                r"(?:潜在原因|原因|机理|故障原因|失效原因)[“\"'‘]([^”\"'’]+)[”\"'’].*?(?:导致|会导致|造成|引起|带来|会造成|会引起|对应后果|对应影响|后果|影响)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "cause_effect",
+            ),
+            (
+                r"(?:后果|影响)[“\"'‘]([^”\"'’]+)[”\"'’].*?(?:原因|机理|故障原因|失效原因)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "effect_cause",
+            ),
+            (
+                r"若“([^”]+)”(?:造成|导致|引起|带来)“([^”]+)”",
+                "cause_effect",
+            ),
+        ]
+        for pattern, order in patterns:
+            m = re.search(pattern, q)
+            if m:
+                left = m.group(1).strip()
+                right = m.group(2).strip()
+                if order == "effect_cause":
+                    return right, left
+                return left, right
+        return "", ""
+
+    @classmethod
+    def _extract_mode_effect_pair(cls, question: str) -> tuple[str, str]:
+        q = str(question or "")
+        patterns = [
+            (
+                r"(?:失效模式|故障现象)[“\"'‘]([^”\"'’]+)[”\"'’].*?(?:导致|会导致|造成|引起|带来|会造成|会引起|对应后果|对应影响|后果|影响)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "mode_effect",
+            ),
+            (
+                r"(?:FMEA记录显示|记录显示|显示|表明|指出)[:：，,]?[“\"'‘]([^”\"'’]+)[”\"'’].*?(?:导致|会导致|造成|引起|带来|会造成|会引起|对应后果|对应影响|后果|影响)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "mode_effect",
+            ),
+            (
+                r"(?:后果|影响)[“\"'‘]([^”\"'’]+)[”\"'’].*?(?:失效模式|故障现象)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "effect_mode",
+            ),
+            (
+                r"请给出“([^”]+)”(?:导致|造成|引起)“([^”]+)”",
+                "mode_effect",
+            ),
+        ]
+        for pattern, order in patterns:
+            m = re.search(pattern, q)
+            if m:
+                left = m.group(1).strip()
+                right = m.group(2).strip()
+                if order == "effect_mode":
+                    return right, left
+                return left, right
+        return "", ""
+
+    @staticmethod
+    def _extract_project_mode_pair(question: str) -> tuple[str, str]:
+        q = str(question or "").strip()
+        patterns = [
+            (
+                r"(?:在|结合|针对|根据|按照|围绕)?(?:项目/功能|设计项目|项目|功能)?[“\"'‘]([^”\"'’]+)[”\"'’](?:中|下|里|时|这条|这项|这组|这份|记录)?[^。！？\n]*?(?:失效模式|故障现象)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "project_mode",
+            ),
+            (
+                r"(?:失效模式|故障现象)[“\"'‘]([^”\"'’]+)[”\"'’][^。！？\n]*?(?:项目/功能|设计项目|项目|功能)[“\"'‘]([^”\"'’]+)[”\"'’]",
+                "mode_project",
+            ),
+            (
+                r"对“([^”]+)”(?:里|中|内)[^。！？]*?“([^”]+)”",
+                "project_mode",
+            ),
+        ]
+        for pattern, order in patterns:
+            m = re.search(pattern, q)
+            if m:
+                left = m.group(1).strip()
+                right = m.group(2).strip()
+                if order == "project_mode":
+                    return left, right
+                return right, left
+        quoted = [x for x in re.findall(r"[“\"'‘]([^”\"'’]+)[”\"'’]", q) if str(x).strip()]
+        has_project_context = (
+            bool(re.search(r"^\s*(?:在|结合|针对|根据|按照|围绕)[“\"'‘]", q))
+            or any(x in q for x in ("项目/功能", "设计项目", "项目", "功能", "工序", "过程"))
+        )
+        if len(quoted) >= 2 and has_project_context:
+            return quoted[0].strip(), quoted[1].strip()
+        return "", ""
+
+    @classmethod
+    def _extract_project_mode_effect_triplet(cls, question: str) -> tuple[str, str, str]:
+        project, mode = cls._extract_project_mode_pair(question)
+        if not project or not mode:
+            return "", "", ""
+        m = re.search(r"(?:造成|导致|引起|带来|会造成|会引起|对应后果|对应影响|后果|影响)[“\"'‘]([^”\"'’]+)[”\"'’]", str(question or ""))
+        if not m:
+            return project, mode, ""
+        return project, mode, m.group(1).strip()
+
+    @staticmethod
+    def _loose_project_key(value: str) -> str:
+        s = str(value or "").lower()
+        s = re.sub(r"\([^)]*\)", "", s)
+        s = re.sub(r"[^a-z0-9]+", "", s)
+        return s
+
+    @classmethod
+    def _same_project_loose(cls, left: str, right: str) -> bool:
+        a = cls._loose_project_key(left)
+        b = cls._loose_project_key(right)
+        return bool(a and b and (a == b or a in b or b in a))
 
     def _infer_intent_from_question(self, q: str) -> str:
         metric = self._extract_metric_any(q)
         quoted = self._extract_quoted_values(q)
-        has_mode = "失效模式" in q
-        has_project = "设计项目" in q or bool(self._extract_process_step_general(q))
+        has_mode = "失效模式" in q or "故障现象" in q or "这类故障" in q or "这类失效" in q
+        has_project = "设计项目" in q or "项目/功能" in q or bool(self._extract_process_step_general(q))
         has_avg = "平均" in q
         has_extreme = any(k in q for k in ("最高", "最大", "最低", "最小"))
         has_controls = ("预防性设计控制" in q or "探测性设计控制" in q or "现行预防性设计控制" in q or "现行探测性设计控制" in q)
         has_relation = any(k in q for k in ("原因", "机理", "后果", "影响"))
+        project, mode = self._extract_project_mode_pair(q)
+        cause, effect = self._extract_cause_effect_pair(q)
+        mode_pair, effect_pair = self._extract_mode_effect_pair(q)
+        s_val, o_val, d_val = self._extract_sod_triplet(q)
+        s_val = s_val or self._extract_numeric_value(q, "严酷度S", "严重度S", "S")
+        o_val = o_val or self._extract_numeric_value(q, "发生度O", "发生度", "频度O", "O")
+        d_val = d_val or self._extract_numeric_value(q, "探测难度D", "现行探测难度D", "可探测度D", "探测度D", "D")
+        rpn_val = self._extract_numeric_value(q, "RPN", "风险优先数", "风险分", "危险分")
+        has_metric_constraints = any((s_val, o_val, d_val, rpn_val))
 
+        if any(x in q for x in ("建议", "措施", "处理", "处置", "改进", "动作", "推荐")) and (has_mode or project or mode or mode_pair or cause or effect or has_metric_constraints):
+            return "lookup_relation"
+        if mode_pair and effect_pair and any(x in q for x in ("原因", "机理", "建议", "措施")):
+            return "lookup_relation"
         if metric and has_mode and quoted:
+            return "lookup_metric"
+        if metric and has_metric_constraints and (cause or effect or mode):
+            return "lookup_relation"
+        if has_project and mode and effect and any(x in q for x in ("后果", "影响")):
+            return "lookup_relation"
+        if has_project and mode and cause and any(x in q for x in ("原因", "机理")):
+            return "lookup_relation"
+        if has_project and mode and has_metric_constraints and any(x in q for x in ("原因", "机理", "后果", "影响", "建议", "措施")):
+            return "lookup_relation"
+        if cause and effect and metric:
+            return "lookup_metric"
+        if cause and effect and has_metric_constraints:
             return "lookup_metric"
         if metric and has_project and has_avg:
             return "aggregate_metric"
         if metric and has_project and has_extreme and "失效模式" in q:
             return "extreme_metric"
+        if mode_pair and effect_pair and any(x in q for x in ("原因", "机理", "后果", "影响", "建议", "措施")):
+            return "lookup_relation"
         if "潜在失效模式" in q and has_project:
             return "list_entities"
+        if project and mode and any(x in q for x in ("后果", "影响", "原因", "机理", "建议", "措施")):
+            return "lookup_relation"
         if ("是否" in q) and has_mode and len(quoted) >= 2:
             return "boolean_verification"
         if has_mode and quoted and has_controls:
@@ -659,8 +1142,42 @@ class ServiceOpsMixin:
 
     def _extract_entities_from_question(self, q: str) -> list[QueryEntity]:
         entities: list[QueryEntity] = []
+        project_mode = self._extract_project_mode_pair(q)
+        if project_mode[0] and project_mode[1]:
+            entities.append(QueryEntity(kind="project", value=project_mode[0], normalized=project_mode[0]))
+            entities.append(QueryEntity(kind="failure_mode", value=project_mode[1], normalized=project_mode[1]))
+            triplet = self._extract_project_mode_effect_triplet(q)
+            if triplet[2]:
+                entities.append(QueryEntity(kind="effect", value=triplet[2], normalized=triplet[2]))
+            cause, effect = self._extract_cause_effect_pair(q)
+            if cause:
+                entities.append(QueryEntity(kind="cause", value=cause, normalized=cause))
+            if effect and not triplet[2]:
+                entities.append(QueryEntity(kind="effect", value=effect, normalized=effect))
+            s_val, o_val, d_val = self._extract_sod_triplet(q)
+            if s_val:
+                entities.append(QueryEntity(kind="metric", value=f"S={s_val}", normalized=s_val))
+            if o_val:
+                entities.append(QueryEntity(kind="metric", value=f"O={o_val}", normalized=o_val))
+            if d_val:
+                entities.append(QueryEntity(kind="metric", value=f"D={d_val}", normalized=d_val))
+            rpn_val = self._extract_numeric_value(q, "RPN", "风险优先数", "风险分", "危险分")
+            if rpn_val:
+                entities.append(QueryEntity(kind="metric", value=f"RPN={rpn_val}", normalized=rpn_val))
+            return entities
+
         quoted = self._extract_quoted_values(q)
-        if "失效模式" in q and quoted:
+        cause, effect = self._extract_cause_effect_pair(q)
+        mode_pair, effect_pair = self._extract_mode_effect_pair(q)
+        if cause:
+            entities.append(QueryEntity(kind="cause", value=cause, normalized=cause))
+        if effect:
+            entities.append(QueryEntity(kind="effect", value=effect, normalized=effect))
+        if mode_pair:
+            entities.append(QueryEntity(kind="failure_mode", value=mode_pair, normalized=mode_pair))
+        if effect_pair and not effect:
+            entities.append(QueryEntity(kind="effect", value=effect_pair, normalized=effect_pair))
+        if ("失效模式" in q or "故障现象" in q or "这类故障" in q or "这类失效" in q) and quoted:
             entities.append(QueryEntity(kind="failure_mode", value=quoted[0], normalized=quoted[0]))
             if ("是否" in q or "是否为" in q or "是否是" in q) and len(quoted) >= 2:
                 tail_kind = "target"
@@ -671,6 +1188,17 @@ class ServiceOpsMixin:
                 entities.append(QueryEntity(kind=tail_kind, value=quoted[-1], normalized=quoted[-1]))
         elif "设计项目" in q and quoted:
             entities.append(QueryEntity(kind="project", value=quoted[0], normalized=quoted[0]))
+        else:
+            has_project_context = (
+                bool(re.search(r"^\s*(?:在|结合|针对|根据|按照|围绕)[“\"'‘]", q))
+                or any(x in q for x in ("项目/功能", "设计项目", "项目", "功能", "工序", "过程"))
+            )
+            if quoted and has_project_context:
+                entities.append(QueryEntity(kind="project", value=quoted[0], normalized=quoted[0]))
+                if len(quoted) >= 2 and ("失效模式" in q or "故障现象" in q):
+                    entities.append(QueryEntity(kind="failure_mode", value=quoted[1], normalized=quoted[1]))
+                elif len(quoted) >= 2 and (cause or effect):
+                    entities.append(QueryEntity(kind="failure_mode", value=quoted[1], normalized=quoted[1]))
 
         scope_step = self._extract_process_step_general(q)
         if scope_step and ("设计项目" in q or "工序" in q or "过程" in q) and not any(e.kind == "project" for e in entities):
@@ -689,7 +1217,13 @@ class ServiceOpsMixin:
 
     def _extract_scope_from_question(self, q: str) -> QueryScope:
         scope = QueryScope()
-        if "设计项目" not in q and "工序" not in q and "过程" not in q:
+        project_mode = self._extract_project_mode_pair(q)
+        if project_mode[0]:
+            scope.project = project_mode[0]
+            scope.process_step = project_mode[0]
+            return scope
+
+        if "设计项目" not in q and "工序" not in q and "过程" not in q and "项目/功能" not in q and "项目" not in q:
             return scope
         step = self._extract_process_step_general(q)
         if step:
@@ -800,6 +1334,388 @@ class ServiceOpsMixin:
             "context_raw": [{"FailureMode": matched, metric: val}],
         }
 
+    def _answer_risk_metrics_by_fmea_code(self, code: str, requested_mode: str = "") -> dict | None:
+        code = str(code or "").strip().upper()
+        if not code:
+            return None
+        rows = self._query_params(
+            """
+            MATCH (fd:FailureMode)
+            WHERE toUpper(toString(fd.FmeaID)) = $code
+            RETURN
+              toString(fd.FmeaID) AS FmeaID,
+              toString(fd.FailureMode) AS FailureMode,
+              fd.S AS S,
+              fd.O AS O,
+              fd.D AS D,
+              fd.RPN AS RPN
+            LIMIT 1
+            """.strip(),
+            {"code": code},
+        )
+        if not rows:
+            return None
+        row = rows[0]
+        mode = str(row.get("FailureMode") or "").strip()
+        if requested_mode and not self._same_failure_mode_text(requested_mode, mode):
+            return None
+
+        def show(value: object) -> str:
+            return self._normalize_evidence_value(value)
+
+        s_val = show(row.get("S"))
+        o_val = show(row.get("O"))
+        d_val = show(row.get("D"))
+        rpn = show(row.get("RPN"))
+        if not all((s_val, o_val, d_val, rpn)):
+            return None
+        answer = f"FMEA编号“{code}”对应的失效模式“{mode}”的S、O、D、RPN分别是：S={s_val}；O={o_val}；D={d_val}；RPN={rpn}。"
+        return {
+            "answer": answer,
+            "context": [f"FmeaID={code}", f"FailureMode={mode}", f"S={s_val}", f"O={o_val}", f"D={d_val}", f"RPN={rpn}"],
+            "context_raw": [row],
+        }
+
+    @staticmethod
+    def _row_text_list(row: dict[str, object], key: str) -> list[str]:
+        value = row.get(key)
+        if value is None:
+            return []
+        if isinstance(value, (list, tuple, set)):
+            return [str(x).strip() for x in value if str(x).strip() and str(x).strip().lower() != "nan"]
+        text = str(value).strip()
+        return [text] if text and text.lower() != "nan" else []
+
+    @staticmethod
+    def _row_number_text(row: dict[str, object], key: str) -> str:
+        return ServiceOpsMixin._normalize_evidence_value(row.get(key))
+
+    @classmethod
+    def _row_matches_target_texts(cls, row: dict[str, object], key: str, target: str) -> bool:
+        target = str(target or "").strip()
+        if not target:
+            return True
+        values = cls._row_text_list(row, key)
+        return any(cls._text_match_loose(target, value) for value in values)
+
+    @classmethod
+    def _row_matches_number_text(cls, row: dict[str, object], key: str, target: str) -> bool:
+        target = str(target or "").strip()
+        if not target:
+            return True
+        value = cls._normalize_evidence_value(row.get(key))
+        return bool(value and target and value == target)
+
+    def _query_failure_mode_rows(
+        self,
+        project: str = "",
+        mode_name: str = "",
+        cause: str = "",
+        effect: str = "",
+        s_val: str = "",
+        o_val: str = "",
+        d_val: str = "",
+        rpn: str = "",
+        limit: int = 1500,
+    ) -> list[dict[str, object]]:
+        rows = self._query_params(
+            """
+            MATCH (fd:FailureMode)-[:occursAtProcessStep]->(ps:ProcessStep)
+            OPTIONAL MATCH (fd)-[:isDueToFailureCause]->(fc:FailureCause)
+            OPTIONAL MATCH (fd)-[:resultsInFailureEffect]->(fe:FailureEffect)
+            RETURN
+              toString(fd.FmeaID) AS FmeaID,
+              toString(fd.FailureMode) AS FailureMode,
+              toString(ps.ProcessStep) AS ProcessStep,
+              fd.S AS S,
+              fd.O AS O,
+              fd.D AS D,
+              fd.RPN AS RPN,
+              toString(fd.RecommendedAction) AS RecommendedAction,
+              toString(fd.TempMeasure) AS TempMeasure,
+              collect(DISTINCT toString(fc.FailureCause)) AS FailureCause,
+              collect(DISTINCT toString(fe.FailureEffect)) AS FailureEffect
+            ORDER BY toString(fd.FmeaID)
+            LIMIT $limit
+            """.strip(),
+            {"limit": int(limit)},
+        )
+        project = str(project or "").strip()
+        mode_name = str(mode_name or "").strip()
+        cause = str(cause or "").strip()
+        effect = str(effect or "").strip()
+        s_val = str(s_val or "").strip()
+        o_val = str(o_val or "").strip()
+        d_val = str(d_val or "").strip()
+        rpn = str(rpn or "").strip()
+
+        scored: list[tuple[int, dict[str, object]]] = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            score = 0
+            process_step = str(row.get("ProcessStep") or "").strip()
+            failure_mode = str(row.get("FailureMode") or "").strip()
+            if project:
+                match_score = self._text_match_score(project, process_step)
+                if not match_score:
+                    continue
+                score += match_score
+            if mode_name:
+                match_score = self._text_match_score(mode_name, failure_mode)
+                if not match_score:
+                    continue
+                score += match_score
+            if cause:
+                match_score = max((self._text_match_score(cause, value) for value in self._row_text_list(row, "FailureCause")), default=0)
+                if not match_score:
+                    continue
+                score += match_score
+            if effect:
+                match_score = max((self._text_match_score(effect, value) for value in self._row_text_list(row, "FailureEffect")), default=0)
+                if not match_score:
+                    continue
+                score += match_score
+            if s_val:
+                row_s = self._normalize_evidence_value(row.get("S"))
+                if row_s == s_val:
+                    score += 1
+                else:
+                    continue
+            if o_val:
+                row_o = self._normalize_evidence_value(row.get("O"))
+                if row_o == o_val:
+                    score += 1
+                else:
+                    continue
+            if d_val:
+                row_d = self._normalize_evidence_value(row.get("D"))
+                if row_d == d_val:
+                    score += 1
+                else:
+                    continue
+            if rpn:
+                row_rpn = self._normalize_evidence_value(row.get("RPN"))
+                if row_rpn == rpn:
+                    score += 1
+                else:
+                    continue
+            scored.append((score, row))
+
+        if not scored:
+            return []
+        scored.sort(key=lambda item: (-item[0], str(item[1].get("FmeaID") or ""), str(item[1].get("FailureMode") or "")))
+        best_score = scored[0][0]
+        return [row for score, row in scored if score == best_score]
+
+    def _format_failure_mode_rows_answer(self, rows: list[dict[str, object]], include_numbers: bool = True) -> str:
+        if not rows:
+            return ""
+
+        def join_values(values: list[str]) -> str:
+            return "；".join(v for v in values if v)
+
+        parts: list[str] = []
+        for idx, row in enumerate(rows, start=1):
+            row_parts: list[str] = []
+            fid = str(row.get("FmeaID") or "").strip()
+            project = str(row.get("ProcessStep") or "").strip()
+            mode = str(row.get("FailureMode") or "").strip()
+            causes = join_values(self._row_text_list(row, "FailureCause"))
+            effects = join_values(self._row_text_list(row, "FailureEffect"))
+            action = str(row.get("RecommendedAction") or "").strip() or str(row.get("TempMeasure") or "").strip()
+            if fid:
+                row_parts.append(f"FMEA编号={fid}")
+            if project:
+                row_parts.append(f"项目/功能={project}")
+            if mode:
+                row_parts.append(f"失效模式={mode}")
+            if causes:
+                row_parts.append(f"失效原因={causes}")
+            if effects:
+                row_parts.append(f"失效后果={effects}")
+            if include_numbers:
+                s_val = self._normalize_evidence_value(row.get("S"))
+                o_val = self._normalize_evidence_value(row.get("O"))
+                d_val = self._normalize_evidence_value(row.get("D"))
+                rpn = self._normalize_evidence_value(row.get("RPN"))
+                if s_val or o_val or d_val or rpn:
+                    row_parts.append(f"S={s_val}；O={o_val}；D={d_val}；RPN={rpn}")
+            if action:
+                row_parts.append(f"建议措施={action}")
+            parts.append(f"{idx}) " + "；".join(row_parts))
+        prefix = f"匹配到{len(rows)}条记录："
+        return prefix + "；".join(parts) + "。"
+
+    def _answer_risk_impact_by_project_mode(self, project: str, mode_name: str, effect: str = "", rpn: str = "") -> dict | None:
+        project = str(project or "").strip()
+        mode_name = str(mode_name or "").strip()
+        if not project or not mode_name:
+            return None
+        rows = self._query_failure_mode_rows(project=project, mode_name=mode_name, effect=effect, rpn=rpn)
+        if not rows:
+            return None
+        return {
+            "answer": self._format_failure_mode_rows_answer(rows),
+            "context": [
+                f"ProcessStep={str(rows[0].get('ProcessStep') or '').strip()}",
+                f"FailureMode={str(rows[0].get('FailureMode') or '').strip()}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
+    def _answer_cause_by_project_mode_effect(self, project: str, mode_name: str, effect: str) -> dict | None:
+        project = str(project or "").strip()
+        mode_name = str(mode_name or "").strip()
+        effect = str(effect or "").strip()
+        if not project or not mode_name or not effect:
+            return None
+        rows = self._query_failure_mode_rows(project=project, mode_name=mode_name, effect=effect)
+        if not rows:
+            return None
+        return {
+            "answer": self._format_failure_mode_rows_answer(rows, include_numbers=False),
+            "context": [
+                f"ProcessStep={str(rows[0].get('ProcessStep') or '').strip()}",
+                f"FailureMode={str(rows[0].get('FailureMode') or '').strip()}",
+                f"FailureEffect={effect}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
+    def _answer_effect_by_project_mode(self, project: str, mode_name: str) -> dict | None:
+        project = str(project or "").strip()
+        mode_name = str(mode_name or "").strip()
+        if not project or not mode_name:
+            return None
+        rows = self._query_failure_mode_rows(project=project, mode_name=mode_name)
+        if not rows:
+            return None
+        effects: list[str] = []
+        for row in rows:
+            for value in self._row_text_list(row, "FailureEffect"):
+                if value not in effects:
+                    effects.append(value)
+        if not effects:
+            return None
+        mode = str(rows[0].get("FailureMode") or mode_name).strip()
+        process_step = str(rows[0].get("ProcessStep") or project).strip()
+        if len(effects) == 1:
+            answer = f"项目/功能={process_step}；失效模式={mode}；失效后果={effects[0]}。"
+        else:
+            answer = f"项目/功能={process_step}；失效模式={mode}；失效后果=" + "；".join(effects) + "。"
+        return {
+            "answer": answer,
+            "context": [f"ProcessStep={process_step}", f"FailureMode={mode}", f"match_count={len(rows)}"],
+            "context_raw": rows,
+        }
+
+    def _answer_cause_by_project_mode_sod(self, project: str, mode_name: str, s_val: str, o_val: str, d_val: str) -> dict | None:
+        rows = self._query_failure_mode_rows(project=project, mode_name=mode_name, s_val=s_val, o_val=o_val, d_val=d_val)
+        if not rows:
+            return None
+        return {
+            "answer": self._format_failure_mode_rows_answer(rows, include_numbers=True),
+            "context": [
+                f"ProcessStep={str(rows[0].get('ProcessStep') or '').strip()}",
+                f"FailureMode={str(rows[0].get('FailureMode') or '').strip()}",
+                f"S={s_val}",
+                f"O={o_val}",
+                f"D={d_val}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
+    def _answer_cause_by_mode_effect_rpn(self, mode_name: str, effect: str, rpn: str) -> dict | None:
+        rows = self._query_failure_mode_rows(mode_name=mode_name, effect=effect, rpn=rpn)
+        if not rows:
+            return None
+        return {
+            "answer": self._format_failure_mode_rows_answer(rows, include_numbers=True),
+            "context": [
+                f"FailureMode={str(rows[0].get('FailureMode') or '').strip()}",
+                f"FailureEffect={effect}",
+                f"RPN={rpn}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
+    def _answer_cause_by_mode_effect_detection(self, mode_name: str, effect: str, d_val: str) -> dict | None:
+        rows = self._query_failure_mode_rows(mode_name=mode_name, effect=effect, d_val=d_val)
+        if not rows:
+            return None
+        return {
+            "answer": self._format_failure_mode_rows_answer(rows, include_numbers=True),
+            "context": [
+                f"FailureMode={str(rows[0].get('FailureMode') or '').strip()}",
+                f"FailureEffect={effect}",
+                f"D={d_val}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
+    def _answer_cause_by_cause_effect(self, cause: str, effect: str) -> dict | None:
+        rows = self._query_failure_mode_rows(cause=cause, effect=effect)
+        if not rows:
+            return None
+        return {
+            "answer": self._format_failure_mode_rows_answer(rows, include_numbers=True),
+            "context": [
+                f"FailureCause={cause}",
+                f"FailureEffect={effect}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
+    def _answer_action_by_mode_profile(
+        self,
+        project: str = "",
+        mode_name: str = "",
+        cause: str = "",
+        effect: str = "",
+        s_val: str = "",
+        o_val: str = "",
+        d_val: str = "",
+        rpn: str = "",
+    ) -> dict | None:
+        rows = self._query_failure_mode_rows(
+            project=project,
+            mode_name=mode_name,
+            cause=cause,
+            effect=effect,
+            s_val=s_val,
+            o_val=o_val,
+            d_val=d_val,
+            rpn=rpn,
+        )
+        if not rows:
+            return None
+        actions: list[str] = []
+        for row in rows:
+            action = str(row.get("RecommendedAction") or "").strip() or str(row.get("TempMeasure") or "").strip()
+            if action and action not in actions:
+                actions.append(action)
+        if not actions:
+            return None
+        mode = str(rows[0].get("FailureMode") or mode_name).strip()
+        project_step = str(rows[0].get("ProcessStep") or project).strip()
+        answer = f"项目/功能={project_step}；失效模式={mode}；建议措施=" + "；".join(actions) + "。"
+        return {
+            "answer": answer,
+            "context": [
+                f"ProcessStep={project_step}",
+                f"FailureMode={mode}",
+                f"match_count={len(rows)}",
+            ],
+            "context_raw": rows,
+        }
+
     def _answer_controls_by_failure_mode_pair(self, mode_name: str) -> dict | None:
         matched = self._match_failure_mode_name(mode_name)
         if not matched:
@@ -898,6 +1814,62 @@ class ServiceOpsMixin:
 
     def execute_query_ir(self, ir: QueryIR) -> dict[str, object]:
         if ir.intent == "lookup_metric":
+            project = ir.scope.project or next((e.value for e in ir.entities if e.kind == "project"), "")
+            mode = next((e.value for e in ir.entities if e.kind == "failure_mode"), "")
+            cause = next((e.value for e in ir.entities if e.kind == "cause"), "")
+            effect = next((e.value for e in ir.entities if e.kind == "effect"), "")
+            s_val, o_val, d_val = self._extract_sod_triplet(ir.original_question)
+            s_val = s_val or self._extract_numeric_value(ir.original_question, "严酷度S", "严重度S", "S")
+            o_val = o_val or self._extract_numeric_value(ir.original_question, "发生度O", "发生度", "频度O", "O")
+            d_val = d_val or self._extract_numeric_value(ir.original_question, "探测难度D", "现行探测难度D", "可探测度D", "探测度D", "D")
+            rpn_val = self._extract_numeric_value(ir.original_question, "RPN", "风险优先数", "风险分", "危险分")
+
+            if ir.metric == "RPN" and any(x in ir.original_question for x in ("后果", "影响")):
+                ans = self._answer_risk_impact_by_project_mode(project, mode, effect=effect, rpn=rpn_val)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if ir.metric == "RPN" and cause and effect:
+                ans = self._answer_cause_by_cause_effect(cause, effect)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+
+            if self._question_requests_all_risk_metrics(ir.original_question):
+                code = next(iter(self._extract_fmea_codes(ir.original_question)), "")
+                mode_for_check = next((e.value for e in ir.entities if e.kind == "failure_mode"), "")
+                if code:
+                    ans = self._answer_risk_metrics_by_fmea_code(code, mode_for_check)
+                    if ans is not None:
+                        return {
+                            "route": "structured",
+                            "evidence": ans.get("context", []),
+                            "context_raw": ans.get("context_raw", []),
+                            "answer_hint": ans.get("answer", ""),
+                            "confidence": 1.0,
+                            "missing_slots": [],
+                        }
+                return {
+                    "route": "vector",
+                    "evidence": [],
+                    "context_raw": [],
+                    "answer_hint": "",
+                    "confidence": 0.5,
+                    "missing_slots": [] if code else ["fmea_code"],
+                }
+
             mode = next((e.value for e in ir.entities if e.kind == "failure_mode"), "")
             if mode and ir.metric:
                 ans = self._answer_metric_by_failure_mode(mode, ir.metric)
@@ -926,6 +1898,112 @@ class ServiceOpsMixin:
                         "missing_slots": [],
                     }
             return {"route": "reject", "evidence": [], "context_raw": [], "answer_hint": "", "confidence": 0.0, "missing_slots": ["failure_mode"]}
+
+        if ir.intent == "lookup_relation":
+            project = ir.scope.project or next((e.value for e in ir.entities if e.kind == "project"), "")
+            mode = next((e.value for e in ir.entities if e.kind == "failure_mode"), "")
+            cause = next((e.value for e in ir.entities if e.kind == "cause"), "")
+            effect_entity = next((e.value for e in ir.entities if e.kind == "effect"), "")
+            s_val, o_val, d_val = self._extract_sod_triplet(ir.original_question)
+            s_val = s_val or self._extract_numeric_value(ir.original_question, "严酷度S", "严重度S", "S")
+            o_val = o_val or self._extract_numeric_value(ir.original_question, "发生度O", "发生度", "频度O", "O")
+            d_val = d_val or self._extract_numeric_value(ir.original_question, "探测难度D", "现行探测难度D", "可探测度D", "探测度D", "D")
+            rpn_val = self._extract_numeric_value(ir.original_question, "RPN", "风险优先数", "风险分", "危险分")
+
+            if any(x in ir.original_question for x in ("原因", "机理")) and project and mode and effect_entity:
+                ans = self._answer_cause_by_project_mode_effect(project, mode, effect_entity)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if any(x in ir.original_question for x in ("原因", "机理")) and project and mode and any((s_val, o_val, d_val)):
+                ans = self._answer_cause_by_project_mode_sod(project, mode, s_val, o_val, d_val)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if any(x in ir.original_question for x in ("原因", "机理")) and mode and effect_entity and rpn_val:
+                ans = self._answer_cause_by_mode_effect_rpn(mode, effect_entity, rpn_val)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if any(x in ir.original_question for x in ("原因", "机理")) and mode and effect_entity and d_val:
+                ans = self._answer_cause_by_mode_effect_detection(mode, effect_entity, d_val)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if any(x in ir.original_question for x in ("原因", "机理")) and cause and effect_entity:
+                ans = self._answer_cause_by_cause_effect(cause, effect_entity)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if any(x in ir.original_question for x in ("后果", "影响")) and project and mode:
+                ans = self._answer_effect_by_project_mode(project, mode)
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            if any(x in ir.original_question for x in ("建议", "措施", "改进", "动作", "推荐")) and (project or mode or cause or effect_entity or any((s_val, o_val, d_val, rpn_val))):
+                ans = self._answer_action_by_mode_profile(
+                    project=project,
+                    mode_name=mode,
+                    cause=cause,
+                    effect=effect_entity,
+                    s_val=s_val,
+                    o_val=o_val,
+                    d_val=d_val,
+                    rpn=rpn_val,
+                )
+                if ans is not None:
+                    return {
+                        "route": "structured",
+                        "evidence": ans.get("context", []),
+                        "context_raw": ans.get("context_raw", []),
+                        "answer_hint": ans.get("answer", ""),
+                        "confidence": 1.0,
+                        "missing_slots": [],
+                    }
+            return {
+                "route": "vector",
+                "evidence": [],
+                "context_raw": [],
+                "answer_hint": "",
+                "confidence": 0.5,
+                "missing_slots": [],
+            }
 
         if ir.intent == "boolean_verification":
             mode = next((e.value for e in ir.entities if e.kind == "failure_mode"), "")
@@ -999,7 +2077,14 @@ class ServiceOpsMixin:
         if isinstance(value, (list, tuple, set)):
             items = [str(x).strip() for x in value if str(x).strip()]
             return " | ".join(items)
-        return str(value).strip()
+        s = str(value).strip()
+        try:
+            f = float(s)
+            if f.is_integer():
+                return str(int(f))
+            return f"{f:.6f}".rstrip("0").rstrip(".")
+        except (ValueError, OverflowError):
+            return s
 
     def _extract_evidence_claims(self, ir: QueryIR, execution_result: dict[str, object]) -> dict[str, set[str]]:
         claims: dict[str, set[str]] = {}
@@ -1077,7 +2162,7 @@ class ServiceOpsMixin:
 
         if conflicts:
             return {
-                "status": "reject",
+                "status": "conflict",
                 "reason": "evidence_conflict",
                 "route": route,
                 "conflicts": conflicts,
@@ -1094,7 +2179,7 @@ class ServiceOpsMixin:
                     "missing_slots": missing_slots,
                 }
             return {
-                "status": "pending",
+                "status": "insufficient",
                 "reason": "structured_evidence_insufficient",
                 "route": route,
                 "conflicts": [],
@@ -1111,7 +2196,7 @@ class ServiceOpsMixin:
                     "missing_slots": missing_slots,
                 }
             return {
-                "status": "pending",
+                "status": "insufficient",
                 "reason": "graph_evidence_insufficient",
                 "route": route,
                 "conflicts": [],
@@ -1120,7 +2205,7 @@ class ServiceOpsMixin:
 
         if route == "vector":
             return {
-                "status": "pending",
+                "status": "insufficient",
                 "reason": "vector_candidate_only",
                 "route": route,
                 "conflicts": [],
@@ -1129,7 +2214,7 @@ class ServiceOpsMixin:
 
         if missing_slots:
             return {
-                "status": "pending",
+                "status": "rejected",
                 "reason": "missing_slots",
                 "route": route,
                 "conflicts": [],
@@ -1138,7 +2223,7 @@ class ServiceOpsMixin:
 
         if has_any_evidence:
             return {
-                "status": "pending",
+                "status": "insufficient",
                 "reason": "evidence_insufficient",
                 "route": route,
                 "conflicts": [],
@@ -1146,7 +2231,7 @@ class ServiceOpsMixin:
             }
 
         return {
-            "status": "pending",
+            "status": "rejected",
             "reason": "no_evidence",
             "route": route,
             "conflicts": [],
@@ -1268,13 +2353,22 @@ class ServiceOpsMixin:
         route = str(execution_result.get("route") or "reject")
         route_confidence = float(execution_result.get("confidence") or 0.0)
         missing_slots = [str(x) for x in (execution_result.get("missing_slots") or []) if str(x).strip()]
-        adjudication = self._adjudicate_execution_result(ir, execution_result)
+        if getattr(self, "enable_evidence_adjudication", True):
+            adjudication = self._adjudicate_execution_result(ir, execution_result)
+        else:
+            adjudication = {
+                "status": "answered" if route in {"structured", "graph"} else "insufficient",
+                "reason": "evidence_adjudication_disabled",
+                "route": route,
+                "conflicts": [],
+                "missing_slots": missing_slots,
+            }
         adjudication_conflicts = adjudication.get("conflicts") or []
 
         if adjudication.get("status") == "answered" and route == "structured":
             answer_text = str(execution_result.get("answer_hint") or "").strip() or "抱歉，未找到可用答案。"
             answer_file = self._save_answer_to_file(answer_text)
-            return {
+            return self._normalize_evidence_payload({
                 "answer": answer_text,
                 "answer_file": answer_file,
                 "context": [str(x) for x in (execution_result.get("evidence") or [])],
@@ -1284,13 +2378,13 @@ class ServiceOpsMixin:
                 "route_confidence": route_confidence,
                 "missing_slots": missing_slots,
                 "adjudication": adjudication,
-            }
+            }, ir.original_question)
 
         if adjudication.get("status") == "answered" and route == "graph":
             query_result = execution_result.get("context_raw") or []
             answer_text, pre_answer = self._compose_graph_answer(ir, query_result)
             answer_file = self._save_answer_to_file(answer_text)
-            return {
+            return self._normalize_evidence_payload({
                 "answer": answer_text,
                 "answer_file": answer_file,
                 "context": pre_answer,
@@ -1300,13 +2394,37 @@ class ServiceOpsMixin:
                 "route_confidence": route_confidence,
                 "missing_slots": missing_slots,
                 "adjudication": adjudication,
-            }
+            }, ir.original_question)
 
         candidate_evidence: list[str] = []
         candidate_raw: list[object] = []
         if route == "vector":
             try:
-                candidate_evidence, candidate_raw = self._collect_vector_candidate_evidence(ir)
+                prep = {
+                    "original": ir.original_question,
+                    "normalized": ir.normalized_question,
+                    "rag_query": ir.query_variants[0] if ir.query_variants else ir.normalized_question,
+                    "query_variants": ir.query_variants,
+                    "metric": ir.metric,
+                    "slot": "",
+                    "exclusion_terms": [c.value for c in ir.constraints if c.kind == "exclude"],
+                    "allow_llm_cypher": False,
+                    "summarize_chunks": False,
+                    "route": "semantic_rag",
+                }
+                rag_answer = self._answer_question_via_vector_rag(prep)
+                rag_answer["query_ir"] = ir.to_debug_dict()
+                rag_answer["route"] = "semantic_rag"
+                rag_answer["route_confidence"] = route_confidence
+                rag_answer["missing_slots"] = missing_slots
+                has_evidence = bool(rag_answer.get("context_raw") or rag_answer.get("context"))
+                rag_answer["adjudication"] = {
+                    **adjudication,
+                    "status": "answered" if has_evidence else "rejected",
+                    "reason": "semantic_evidence_confirmed" if has_evidence else "no_evidence",
+                    "route": "semantic_rag",
+                }
+                return self._normalize_evidence_payload(rag_answer, ir.original_question)
             except Exception as e:
                 candidate_evidence = [f"vector_candidate_error={e}"]
 
@@ -1316,7 +2434,7 @@ class ServiceOpsMixin:
             candidate_evidence=candidate_evidence,
         )
         answer_file = self._save_answer_to_file(answer_text)
-        return {
+        return self._normalize_evidence_payload({
             "answer": answer_text,
             "answer_file": answer_file,
             "context": candidate_evidence if candidate_evidence else [str(x) for x in (execution_result.get("evidence") or [])],
@@ -1327,12 +2445,22 @@ class ServiceOpsMixin:
             "missing_slots": missing_slots,
             "adjudication": adjudication,
             "evidence_conflicts": adjudication_conflicts,
-        }
+        }, ir.original_question)
 
     def _preprocess_question_for_retrieval(self, question: str) -> dict[str, object]:
         """Normalize and rewrite question for vector retrieval before QA routing."""
         q = str(question or "").strip()
         q_norm = self._normalize_query_text(q)
+        if not getattr(self, "enable_semantic_retrieval_enhancement", True):
+            return {
+                "original": q,
+                "normalized": q_norm,
+                "rag_query": q,
+                "query_variants": [q] if q else [],
+                "metric": self._extract_metric_any(q_norm),
+                "slot": "",
+                "exclusion_terms": [],
+            }
         q_norm = q_norm.replace("是什么？", "是什么？")
         variants: list[str] = [q_norm]
         if q_norm != q:
@@ -1363,6 +2491,35 @@ class ServiceOpsMixin:
             target = bool_match.group(2).strip()
             variants.append(f"判断失效模式“{mode}”的后果是否是“{target}”，只回答是或不是。")
 
+        codes = self._extract_fmea_codes(q_norm)
+        if codes:
+            code = codes[0]
+            variants.append(
+                f"FMEA编号 {code} 对应的失效模式 FailureMode、项目 ProcessStep、失效原因 FailureCause、失效后果 FailureEffect、RPN 风险优先数、建议措施 RecommendedAction。"
+            )
+
+        colloquial_rewrite = q_norm
+        replacements = [
+            (("啥问题", "问题名", "问题名字", "毛病", "坏在哪", "什么坏"), "失效模式 FailureMode"),
+            (("风险数", "危险分", "风险分", "分数", "分多少"), "RPN 风险优先数 risk score"),
+            (("咋来的", "咋来", "为啥", "为什么"), "失效原因 FailureCause reason cause"),
+            (("结果", "后果", "会怎样", "最后会弄成啥"), "失效后果 FailureEffect result consequence"),
+            (("哪一块", "哪个部位", "哪个地方", "出现哪里", "在哪个地方", "在哪一块"), "项目/功能 ProcessStep where it happens"),
+            (("咋处理", "怎么处理", "处理", "建议"), "建议措施 RecommendedAction action"),
+            (("最麻烦", "最该担心", "最严重", "最高", "高分", "最前面", "优先看"), "RPN最高 top risk 失效模式 原因 后果 建议措施"),
+            (("平均能查出来", "能查出来的那个分", "平均探测", "平均检测"), "平均可探测度 D detection"),
+            (("多少条", "一共有", "几条"), "失效模式记录数量 count"),
+        ]
+        for sources, target in replacements:
+            for source in sources:
+                if source in colloquial_rewrite:
+                    colloquial_rewrite = colloquial_rewrite.replace(source, target)
+        if colloquial_rewrite != q_norm:
+            variants.append(colloquial_rewrite)
+
+        if any(x in q_norm for x in ("说说", "别太官方", "讲人话")):
+            variants.append(q_norm + " 失效模式 FailureMode 失效原因 FailureCause 失效后果 FailureEffect")
+
         # 对排除语义做显式改写，提升向量检索召回准确度。
         ex_terms = self._extract_exclusion_terms(q_norm)
         if ex_terms:
@@ -1389,6 +2546,76 @@ class ServiceOpsMixin:
         hits: list[str] = []
         seen: set[str] = set()
         each_k = max(k, min(8, k * 2))
+        return_limit = each_k
+
+        if not getattr(self, "enable_semantic_retrieval_enhancement", True):
+            q = next((str(x or "").strip() for x in queries if str(x or "").strip()), "")
+            if not q:
+                return []
+            return [
+                str(getattr(result, "page_content", "") or "").strip()
+                for result in self.similarity_search(q, k=k)
+                if str(getattr(result, "page_content", "") or "").strip()
+            ]
+
+        anchor_terms: list[str] = []
+        for q in queries:
+            for code in self._extract_fmea_codes(q):
+                if code not in anchor_terms:
+                    anchor_terms.append(code)
+
+        combined_query = " ".join(str(q or "") for q in queries)
+        wants_summary = any(
+            x in combined_query
+            for x in (
+                "最麻烦", "最该担心", "最严重", "最高", "高分", "优先看", "风险最大",
+                "RPN最高", "top risk", "多少条", "几条", "一共有", "平均",
+            )
+        )
+        if wants_summary:
+            return_limit = max(return_limit, 80)
+            try:
+                rows = self._query_params(
+                    """
+                    MATCH (c:Chunk)
+                    WHERE c.chunkType = "kg_summary" AND c.text IS NOT NULL
+                    RETURN toString(c.text) AS text
+                    ORDER BY CASE WHEN c.id = "fmea_summary_global_top_rpn" THEN 0 ELSE 1 END, c.id
+                    LIMIT $limit
+                    """.strip(),
+                    {"limit": return_limit},
+                )
+            except Exception:
+                rows = []
+            for row in rows:
+                text = str(row.get("text") or "").strip()
+                if not text or text in seen:
+                    continue
+                seen.add(text)
+                hits.append(text)
+
+        for term in anchor_terms:
+            pattern = "(?s).*(^|[^A-Z0-9])" + re.escape(term) + "([^A-Z0-9]|$).*"
+            try:
+                rows = self._query_params(
+                    """
+                    MATCH (c:Chunk)
+                    WHERE c.text IS NOT NULL AND toString(c.text) =~ $pattern
+                    RETURN toString(c.text) AS text
+                    LIMIT $limit
+                    """.strip(),
+                    {"pattern": pattern, "limit": each_k},
+                )
+            except Exception:
+                rows = []
+            for row in rows:
+                text = str(row.get("text") or "").strip()
+                if not text or text in seen:
+                    continue
+                seen.add(text)
+                hits.append(text)
+            if len(hits) >= return_limit:
+                return hits[:return_limit]
 
         for q in queries:
             results = self.similarity_search(q, k=each_k)
@@ -1401,7 +2628,7 @@ class ServiceOpsMixin:
             if len(hits) >= each_k:
                 break
 
-        return hits[:each_k]
+        return hits[:return_limit]
 
     @staticmethod
     def _normalize_llm_answer_text(text: str) -> str:
@@ -1431,6 +2658,266 @@ class ServiceOpsMixin:
                     parts.append(f"[{i}] {t}")
         return "\n".join(parts)
 
+    @staticmethod
+    def _chunk_field_value(chunk: str, marker: str) -> str:
+        for line in str(chunk or "").splitlines():
+            if marker not in line:
+                continue
+            if ":" not in line:
+                continue
+            value = line.split(":", 1)[1].strip()
+            if value and value.lower() not in {"nan", "none"}:
+                return value
+        return ""
+
+    @staticmethod
+    def _chunk_text(chunk: object) -> str:
+        return str(getattr(chunk, "page_content", chunk) or "").strip()
+
+    def _rank_retrieved_kg_chunks(self, question: str, chunks: list[object]) -> list[object]:
+        if not getattr(self, "enable_semantic_retrieval_enhancement", True):
+            return chunks
+
+        q = self._normalize_query_text(str(question or "").strip())
+        if not q or not chunks:
+            return chunks
+
+        quoted_terms = [x.strip() for x in re.findall(r"[“\"'‘]([^”\"'’]+)[”\"'’]", q) if x.strip()]
+        code_terms = self._extract_fmea_codes(q)
+        high_risk_intent = any(x in q for x in ("最麻烦", "最该担心", "最严重", "最高", "高分", "优先看", "风险最大", "rpn最高", "RPN最高"))
+        global_intent = any(x in q for x in ("这个表", "这份", "全局", "总体", "所有", "整个"))
+        count_intent = any(x in q for x in ("多少条", "几条", "一共有", "总共"))
+        avg_intent = any(x in q for x in ("平均", "平均值"))
+        aggregate_intent = high_risk_intent or count_intent or avg_intent
+        cause_effect_intent = any(x in q for x in ("原因", "为啥", "为什么", "咋来", "后果", "结果", "会怎样"))
+
+        def score(chunk: object) -> int:
+            text = self._chunk_text(chunk)
+            text_lower = text.lower()
+            s = 0
+            for term in code_terms:
+                if re.search(r"(^|[^A-Z0-9])" + re.escape(term) + r"([^A-Z0-9]|$)", text):
+                    s += 100
+            for term in quoted_terms:
+                if term and term in text:
+                    s += 45
+            project_value = self._chunk_field_value(text, "项目/功能 / ProcessStep")
+            if project_value and project_value.lower() in q.lower():
+                s += 90
+                s += min(80, max(0, len(project_value) // 2))
+                if aggregate_intent and "summary chunk" in text_lower:
+                    s += 150
+                elif aggregate_intent:
+                    s -= 60
+            if high_risk_intent and "summary chunk" in text_lower:
+                s += 40
+            if high_risk_intent and global_intent and "全局最高RPN" in text:
+                s += 60
+            if high_risk_intent and any(x in text for x in ("最高RPN", "top risk", "最麻烦", "排名1")):
+                s += 35
+            if count_intent and any(x in text for x in ("记录数量", "count", "多少条")):
+                s += 30
+            if avg_intent and any(x in text for x in ("平均RPN", "average")):
+                s += 30
+            if cause_effect_intent and "原因=" in text and "后果=" in text:
+                s += 20
+            return s
+
+        return sorted(chunks, key=score, reverse=True)
+
+    def _answer_from_retrieved_kg_chunk(self, question: str, chunks: list[object]) -> str:
+        q = str(question or "").strip()
+        code_terms = self._extract_fmea_codes(q)
+        target_chunk = ""
+        aggregate_question = any(
+            x in q
+            for x in (
+                "最麻烦", "最该担心", "最严重", "最高", "高分", "优先看", "风险最大",
+                "RPN最高", "rpn最高", "平均", "多少条", "几条", "一共有", "总共",
+            )
+        )
+        if code_terms and not aggregate_question:
+            code = code_terms[0]
+            pattern = re.compile(r"(^|[^A-Z0-9])" + re.escape(code) + r"([^A-Z0-9]|$)")
+            for chunk in chunks:
+                text = self._chunk_text(chunk)
+                if pattern.search(text):
+                    target_chunk = text
+                    break
+        if not target_chunk and chunks:
+            target_chunk = self._chunk_text(chunks[0])
+        if not target_chunk:
+            return ""
+
+        summary_project = self._chunk_field_value(target_chunk, "项目/功能 / ProcessStep")
+        summary_count = self._chunk_field_value(target_chunk, "记录数量 / count")
+        summary_avg_rpn = self._chunk_field_value(target_chunk, "平均RPN / average")
+        summary_avg_d = self._chunk_field_value(target_chunk, "平均可探测度 / average D")
+        summary_max_rpn = self._chunk_field_value(target_chunk, "最高RPN / top risk")
+        asks_avg_risk = any(x in q for x in ("平均", "平均下来", "整体")) and any(x in q for x in ("危险分", "风险分", "风险数", "RPN", "rpn"))
+        asks_avg_detection = any(x in q for x in ("平均", "平均多少")) and any(x in q for x in ("能查出来", "探测", "检测"))
+        asks_count = any(x in q for x in ("多少条", "几条", "一共有", "总共"))
+        if asks_avg_detection and summary_avg_d:
+            prefix = f"项目/功能“{summary_project}”" if summary_project else "该项目/功能"
+            return f"{prefix}的平均可探测度D是：{summary_avg_d}。"
+        if asks_avg_risk and summary_avg_rpn:
+            prefix = f"项目/功能“{summary_project}”" if summary_project else "该项目/功能"
+            return f"{prefix}的平均RPN是：{summary_avg_rpn}。"
+        if asks_count and summary_count:
+            prefix = f"项目/功能“{summary_project}”" if summary_project else "该项目/功能"
+            return f"{prefix}共有{summary_count}条失效模式记录。"
+
+        asks_top_risk = any(x in q for x in ("最麻烦", "最该担心", "最严重", "最高", "高分", "优先看", "风险最大", "RPN最高", "rpn最高"))
+        if asks_top_risk and "排名1:" in target_chunk:
+            rank1_line = ""
+            for line in target_chunk.splitlines():
+                if line.strip().startswith("排名1:"):
+                    rank1_line = line.strip()
+                    break
+            if rank1_line:
+                payload = rank1_line.split(":", 1)[1]
+                fields: dict[str, str] = {}
+                field_names = "FMEA编号|项目/功能|失效模式|RPN|S|O|D|原因|后果|建议措施"
+                for match in re.finditer(
+                    rf"({field_names})=(.*?)(?=; (?:{field_names})=|\.$)",
+                    payload,
+                ):
+                    fields[match.group(1).strip()] = match.group(2).strip().rstrip(".")
+                parts = []
+                if fields.get("FMEA编号"):
+                    parts.append(f"FMEA编号是：{fields['FMEA编号']}")
+                if fields.get("项目/功能"):
+                    parts.append(f"项目/功能是：{fields['项目/功能']}")
+                if fields.get("失效模式"):
+                    parts.append(f"失效模式是：{fields['失效模式']}")
+                if fields.get("RPN"):
+                    parts.append(f"RPN是：{fields['RPN']}")
+                elif summary_max_rpn:
+                    parts.append(f"RPN是：{summary_max_rpn}")
+                if fields.get("原因"):
+                    parts.append(f"原因是：{fields['原因']}")
+                if fields.get("后果"):
+                    parts.append(f"后果是：{fields['后果']}")
+                if fields.get("建议措施"):
+                    parts.append(f"建议措施是：{fields['建议措施']}")
+                if parts:
+                    return "当前召回的图谱摘要证据中，最高风险条目为：" + "；".join(parts) + "。"
+
+        mode = self._chunk_field_value(target_chunk, "失效模式 / FailureMode")
+        project = self._chunk_field_value(target_chunk, "项目/功能 / ProcessStep")
+        rpn = self._chunk_field_value(target_chunk, "风险优先数 / RPN")
+        cause = self._chunk_field_value(target_chunk, "失效原因 / FailureCause")
+        effect = self._chunk_field_value(target_chunk, "失效后果 / FailureEffect")
+        action = self._chunk_field_value(target_chunk, "建议措施 / RecommendedAction")
+        prevent = self._chunk_field_value(target_chunk, "现行预防控制 / PreventControl")
+        detect = self._chunk_field_value(target_chunk, "现行探测控制 / DetectionMeasure")
+
+        asks_mode = any(x in q for x in ("啥问题", "问题名", "问题名字", "什么坏", "坏在哪", "坏在哪个点", "主要坏在哪", "最关键的问题"))
+        asks_score = any(x in q for x in ("风险数", "危险分", "风险分", "分数", "分多少"))
+        asks_location = any(x in q for x in ("哪一块", "哪个部位", "哪个地方", "出现哪里", "在哪个地方", "在哪一块", "哪里"))
+        asks_action = any(x in q for x in ("咋处理", "怎么处理", "处理", "建议", "措施", "控制"))
+        asks_cause = any(x in q for x in ("原因", "机理", "咋来", "咋来的", "为啥", "为什么"))
+        asks_effect = any(x in q for x in ("后果", "影响", "结果", "会造成", "造成", "会怎样", "最后"))
+        asks_cause_effect = (
+            asks_cause
+            and any(x in q for x in ("结果", "后果", "影响", "会弄成", "会造成", "造成", "会怎样", "最后"))
+        ) or ("原因" in q and "结果" in q)
+
+        if asks_cause and not asks_action and cause:
+            parts = []
+            if mode:
+                parts.append(f"失效模式是：{mode}")
+            if project:
+                parts.append(f"项目/功能是：{project}")
+            parts.append(f"潜在失效原因/机理是：{cause}")
+            return "；".join(parts) + "。"
+        if asks_effect and asks_score and (effect or rpn):
+            parts = []
+            if mode:
+                parts.append(f"失效模式是：{mode}")
+            if project:
+                parts.append(f"项目/功能是：{project}")
+            if effect:
+                parts.append(f"失效后果是：{effect}")
+            if rpn:
+                parts.append(f"RPN是：{rpn}")
+            return "；".join(parts) + "。"
+        if asks_effect and not asks_action and effect:
+            parts = []
+            if mode:
+                parts.append(f"失效模式是：{mode}")
+            if project:
+                parts.append(f"项目/功能是：{project}")
+            parts.append(f"失效后果是：{effect}")
+            return "；".join(parts) + "。"
+        if asks_action and action:
+            parts = []
+            if mode:
+                parts.append(f"失效模式是：{mode}")
+            if project:
+                parts.append(f"项目/功能是：{project}")
+            parts.append(f"建议措施是：{action}")
+            return "；".join(parts) + "。"
+        if (asks_cause_effect or asks_action) and (cause or effect or action or prevent or detect):
+            parts = []
+            if mode:
+                parts.append(f"失效模式是：{mode}")
+            if cause:
+                parts.append(f"原因是：{cause}")
+            if effect:
+                parts.append(f"后果是：{effect}")
+            if action:
+                parts.append(f"建议措施是：{action}")
+            elif prevent or detect:
+                controls = "；".join(x for x in (prevent, detect) if x)
+                parts.append(f"控制措施是：{controls}")
+            if asks_score and rpn:
+                parts.append(f"RPN是：{rpn}")
+            return "；".join(parts) + "。"
+        if asks_location and asks_score and (project or rpn):
+            parts = []
+            if mode:
+                parts.append(f"失效模式是：{mode}")
+            if project:
+                parts.append(f"项目/功能是：{project}")
+            if rpn:
+                parts.append(f"RPN是：{rpn}")
+            return "；".join(parts) + "。"
+        if asks_score and rpn:
+            prefix = f"失效模式是：{mode}；" if mode else ""
+            return f"{prefix}RPN是：{rpn}。"
+        if asks_mode and mode:
+            return mode
+        return ""
+
+    def _evidence_supports_question(self, question: str, query_result: list) -> bool:
+        """校验语义检索到的证据是否匹配问题。
+
+        提取问题中的引号实体与 FMEA 编号，要求它们出现在检索证据中；
+        若问题含明确实体/编号，而证据中一个都不出现，则判定证据不匹配，
+        应拒答而非据无关证据生成答案。
+        """
+        if not query_result:
+            return False
+        q = str(question or "")
+        quoted = self._extract_quoted_values(q)
+        codes = self._extract_fmea_codes(q)
+        keys = [str(k).strip().lower() for k in (quoted + codes) if str(k).strip()]
+        keys = [k for k in keys if len(k) >= 2]
+        if not keys:
+            return True
+        evidence_text = " ".join(str(c) for c in query_result).lower()
+        # 长实体再拆词（空格/斜杠分隔），任一成分命中即视为该实体命中
+        for k in keys:
+            if k in evidence_text:
+                continue
+            words = [w for w in re.split(r"[\s/]+", k) if len(w) >= 3]
+            if words:
+                longest = max(words, key=len)
+                if longest not in evidence_text:
+                    return False
+        return True
+
     def _answer_question_via_vector_rag(self, prep: dict[str, object]) -> dict:
         """Vector-first QA path using preprocessed/re-written queries."""
         question_original = str(prep.get("original") or "").strip()
@@ -1440,21 +2927,20 @@ class ServiceOpsMixin:
             query_variants = [question_for_retrieval]
 
         pre_answer: list[str] = []
+        query_result = None
 
-        # 先尝试图查询（让 LLM 生成 Cypher），使用预处理后的检索问题。
-        self.cypher_prompt_context(question_for_retrieval)
-        result = self.run_inference(self.context_cypher)
-        cypher_query = self.extract_cypher(result.choices[0].message.content)
+        allow_llm_cypher = bool(prep.get("allow_llm_cypher"))
+        if allow_llm_cypher:
+            self.cypher_prompt_context(question_for_retrieval)
+            result = self.run_inference(self.context_cypher)
+            cypher_query = self.extract_cypher(result.choices[0].message.content)
 
-        if self.validate_cypher(cypher_query):
-            query_result = self.query(cypher_query)
-            if len(query_result) > self.top_k:
-                query_result = query_result[: self.top_k]
-        else:
-            query_result = None
+            if self.validate_cypher(cypher_query):
+                query_result = self.query(cypher_query)
+                if len(query_result) > self.top_k:
+                    query_result = query_result[: self.top_k]
 
         if not query_result:
-            # 图查询失败时，走“多改写问题”的向量检索。
             try:
                 self._ensure_vector_index()
                 query_result = self._vector_search_multi_queries(query_variants, k=self.top_k)
@@ -1470,18 +2956,50 @@ class ServiceOpsMixin:
                     ) from e
                 raise
 
-        # 对检索结果做结构化压缩，再用于最终回答。
+        query_result = self._rank_retrieved_kg_chunks(question_original, list(query_result or []))
+        if getattr(self, "enable_evidence_adjudication", True) and not self._evidence_supports_question(question_original, query_result):
+            reject_text = "待确认：证据不足，未找到与问题匹配的证据记录。"
+            answer_file = self._save_answer_to_file(reject_text)
+            return self._normalize_evidence_payload({
+                "answer": reject_text,
+                "answer_file": answer_file,
+                "context": [],
+                "context_raw": [],
+                "route": "reject",
+                "adjudication": {
+                    "status": "rejected",
+                    "reason": "no_matching_evidence",
+                    "route": "reject",
+                    "conflicts": [],
+                    "missing_slots": [],
+                },
+            }, question_original)
+        extracted_answer = ""
+        if getattr(self, "enable_kg_chunk_answer_extraction", True):
+            extracted_answer = self._answer_from_retrieved_kg_chunk(question_original, query_result)
+        if extracted_answer:
+            answer_file = self._save_answer_to_file(extracted_answer)
+            return self._normalize_evidence_payload({
+                "answer": extracted_answer,
+                "answer_file": answer_file,
+                "context": [self._format_context_for_answer([query_result[0]])] if query_result else [],
+                "context_raw": query_result,
+                "route": str(prep.get("route") or "semantic_rag"),
+            }, question_original)
+
+        summarize_chunks = bool(prep.get("summarize_chunks"))
         for r in query_result:
-            result_summarize = self.run_inference(
-                [self.summarize_context(context=json.dumps(r, ensure_ascii=False), question=question_original)]
-            )
-            summarized = self._normalize_llm_answer_text(result_summarize.choices[0].message.content)
-            if summarized:
-                pre_answer.append(summarized)
-            else:
-                raw = self._format_context_for_answer([r]).strip()
-                if raw:
-                    pre_answer.append(raw)
+            raw = self._format_context_for_answer([r]).strip()
+            if summarize_chunks:
+                result_summarize = self.run_inference(
+                    [self.summarize_context(context=json.dumps(r, ensure_ascii=False), question=question_original)]
+                )
+                summarized = self._normalize_llm_answer_text(result_summarize.choices[0].message.content)
+                if summarized:
+                    pre_answer.append(summarized)
+                    continue
+            if raw:
+                pre_answer.append(raw)
 
         answer_context = self._format_context_for_answer(query_result)
         if not answer_context:
@@ -1502,12 +3020,13 @@ class ServiceOpsMixin:
             answer_text = answer_text[len("总结："):].strip()
         answer_file = self._save_answer_to_file(answer_text)
 
-        return {
+        return self._normalize_evidence_payload({
             "answer": answer_text,
             "answer_file": answer_file,
             "context": pre_answer,
             "context_raw": query_result,
-        }
+            "route": str(prep.get("route") or "semantic_rag"),
+        }, question_original)
 
     # 最关键的“直接调用大模型 API”的函数：它把 messages=context 发给 Ollama 的原生 chat 接口，
     # 默认指向本地 Ollama，再把模型返回的补全结果对象原样返回。
@@ -1603,7 +3122,17 @@ class ServiceOpsMixin:
             bool: True if the graph was created successfully, False otherwise.
 
         """
-        return graph_building.create_fmea_graph(self, csv_file)
+        ok = graph_building.create_fmea_graph(self, csv_file)
+        if ok:
+            try:
+                csv_path = str(Path(csv_file).resolve())
+                df = self._read_dfmea_csv(csv_path)
+                if df is not None:
+                    self._dfmea_cache_path = csv_path
+                    self._dfmea_cache_df = df
+            except Exception:
+                pass
+        return ok
 
     # 在已经把 FMEA 的节点/关系写进 Neo4j 之后，再把每个失效模式相关的一坨信息“打包成文本 → 向量化 → 存到 Neo4j 的向量索引里
     def create_vector_embeddings(self) -> bool:

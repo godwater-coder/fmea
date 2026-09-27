@@ -33,6 +33,7 @@ class QuestionItem:
     question: str
     row_index: int
     kind: str
+    tag: str = ""
 
 
 def norm_text(text: Any) -> str:
@@ -103,6 +104,7 @@ def load_questions(path: Path) -> list[QuestionItem]:
                 question=str(r["question"]),
                 row_index=int(r.get("row_index", -1)),
                 kind=str(r["kind"]),
+                tag=str(r.get("tag", "")),
             )
         )
     return items
@@ -349,6 +351,29 @@ def gold_for_item(df: pd.DataFrame, item: QuestionItem) -> dict[str, Any]:
         return {"type": "set", "gold": unique_nonempty([control_prev, control_det])}
     if item.kind == "mode_action":
         return {"type": "text", "gold": [action]}
+    if item.kind == "multi_mode_cause_effect":
+        return {"type": "text", "gold": unique_nonempty([cause, effect])}
+    if item.kind == "multi_mode_risk_control":
+        return {"type": "text", "gold": unique_nonempty([str(s), str(o), str(d), str(rpn), control_prev, control_det])}
+    if item.kind == "multi_project_top_chain":
+        question_project = _first_quoted(item.question) or project
+        rows = _project_rows(df, question_project, cols)
+        rpn_series = _project_series_numeric(rows, rpn_col)
+        mx = rpn_series.max() if len(rpn_series) else None
+        if mx != mx:
+            return {"type": "text", "gold": []}
+        top_rows = rows.loc[pd.to_numeric(rows[rpn_col], errors="coerce") == mx]
+        terms: list[str] = []
+        for _, top_row in top_rows.iterrows():
+            terms.extend(
+                [
+                    _row_text(top_row, mode_col),
+                    _row_text(top_row, cause_col),
+                    _row_text(top_row, effect_col),
+                    _row_text(top_row, action_col),
+                ]
+            )
+        return {"type": "text", "gold": unique_nonempty(terms)}
     if item.kind in {
         "mode_boolean_cause",
         "mode_boolean_effect",
@@ -714,7 +739,9 @@ def main() -> int:
         preds = load_predictions(Path(args.predictions))
         for item in questions:
             pred = preds.get(item.idx, {"answer": "", "error": "missing_prediction"})
-            details.append(score_item(df, item, pred))
+            detail = score_item(df, item, pred)
+            detail["tag"] = item.tag
+            details.append(detail)
 
     detail_path = Path(args.out_csv)
     detail_path.parent.mkdir(parents=True, exist_ok=True)
@@ -725,14 +752,19 @@ def main() -> int:
 
     scores = [float(d["score"]) for d in details]
     by_kind: dict[str, list[float]] = {}
+    by_tag: dict[str, list[float]] = {}
     for d in details:
         by_kind.setdefault(d["kind"], []).append(float(d["score"]))
+        tag = str(d.get("tag") or "")
+        if tag:
+            by_tag.setdefault(tag, []).append(float(d["score"]))
 
     summary = {
         "total": len(details),
         "exact_accuracy": round(mean(scores) if scores else 0.0, 4),
         "exact_correct": int(sum(1 for x in scores if x >= 1)),
         "kind_accuracy": {k: round(mean(v), 4) for k, v in sorted(by_kind.items())},
+        "tag_accuracy": {k: round(mean(v), 4) for k, v in sorted(by_tag.items())},
         "source": source,
         "detail_csv": str(detail_path),
     }

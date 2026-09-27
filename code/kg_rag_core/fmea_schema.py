@@ -116,6 +116,9 @@ def normalize_to_project_schema(
     out = pd.DataFrame(index=rows.index)
 
     for field in PROJECT_SCHEMA_FIELDS:
+        if field.name in rows.columns:
+            out[field.name] = rows[field.name]
+            continue
         if field.source_headers:
             value = None
             for header in field.source_headers:

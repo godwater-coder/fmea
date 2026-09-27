@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900" font-family="Microsoft YaHei, SimHei, PingFang SC, sans-serif">
+<defs>
+<marker id="arw" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#333"/></marker>
+<marker id="arwo" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#E08A00"/></marker>
+</defs>
+<rect width="1100" height="900" fill="#ffffff"/>
+
+<rect x="270" y="24" width="560" height="56" rx="10" fill="#F2F4F7" stroke="#8A94A6" stroke-width="1.5"/>
+<text x="550" y="58" text-anchor="middle" font-size="19" fill="#1F2937">自然语言提问（工程现场的多样表述）</text>
+<line x1="550" y1="80" x2="550" y2="110" stroke="#333" stroke-width="1.8" marker-end="url(#arw)"/>
+
+<rect x="150" y="112" width="800" height="72" rx="10" fill="#EAF2FB" stroke="#3B7DD8" stroke-width="1.8"/>
+<text x="550" y="140" text-anchor="middle" font-size="19" font-weight="bold" fill="#12447F">查询中间表示（贯穿全流程的语义中介）</text>
+<text x="550" y="167" text-anchor="middle" font-size="16" fill="#12447F">意图 · 实体 · 指标 · 约束 · 作用域 · 输出类型</text>
+<line x1="550" y1="184" x2="550" y2="214" stroke="#333" stroke-width="1.8" marker-end="url(#arw)"/>
+
+<rect x="60" y="216" width="980" height="236" rx="14" fill="#FFF7E6" stroke="#E08A00" stroke-width="3.5"/>
+<text x="550" y="250" text-anchor="middle" font-size="23" font-weight="bold" fill="#8A4B00">证据可及性路由　★ 核心创新</text>
+<text x="550" y="276" text-anchor="middle" font-size="16" fill="#8A4B00">路由判据：证据以何种形态存在（而非问题类型）</text>
+
+<rect x="90" y="294" width="215" height="92" rx="9" fill="#ffffff" stroke="#C98A2B" stroke-width="1.6"/>
+<text x="197" y="324" text-anchor="middle" font-size="15" fill="#7A5A21">证据已显式存在</text>
+<text x="197" y="354" text-anchor="middle" font-size="19" font-weight="bold" fill="#8A4B00">直接定位</text>
+
+<rect x="335" y="294" width="215" height="92" rx="9" fill="#ffffff" stroke="#C98A2B" stroke-width="1.6"/>
+<text x="442" y="324" text-anchor="middle" font-size="15" fill="#7A5A21">需经确定运算构造</text>
+<text x="442" y="354" text-anchor="middle" font-size="19" font-weight="bold" fill="#8A4B00">规则推演</text>
+
+<rect x="580" y="294" width="215" height="92" rx="9" fill="#ffffff" stroke="#C98A2B" stroke-width="1.6"/>
+<text x="687" y="324" text-anchor="middle" font-size="15" fill="#7A5A21">分布在关系链之上</text>
+<text x="687" y="354" text-anchor="middle" font-size="19" font-weight="bold" fill="#8A4B00">关系遍历</text>
+
+<rect x="825" y="294" width="215" height="92" rx="9" fill="#ffffff" stroke="#C98A2B" stroke-width="1.6"/>
+<text x="932" y="324" text-anchor="middle" font-size="15" fill="#7A5A21">仅可语义近似取得</text>
+<text x="932" y="354" text-anchor="middle" font-size="19" font-weight="bold" fill="#8A4B00">语义召回</text>
+
+<text x="550" y="424" text-anchor="middle" font-size="16" fill="#8A4B00">四类逐层互斥且穷尽　→　对用户提问具有完备覆盖</text>
+<line x1="550" y1="452" x2="550" y2="482" stroke="#333" stroke-width="1.8" marker-end="url(#arw)"/>
+
+<rect x="150" y="484" width="800" height="74" rx="10" fill="#F1F6F2" stroke="#5A9E6F" stroke-width="1.8"/>
+<text x="550" y="512" text-anchor="middle" font-size="18" font-weight="bold" fill="#2C5F3E">知识底座：统一知识表示与证据索引（配套环节）</text>
+<text x="550" y="538" text-anchor="middle" font-size="15" fill="#2C5F3E">知识要素拆解 → 关联组织 → 证据索引（局部证据块 · 全局与项目摘要块）</text>
+<line x1="550" y1="558" x2="550" y2="588" stroke="#333" stroke-width="1.8" marker-end="url(#arw)"/>
+
+<rect x="150" y="590" width="800" height="118" rx="10" fill="#F4F1FB" stroke="#7A5AC4" stroke-width="1.8"/>
+<text x="550" y="618" text-anchor="middle" font-size="18" font-weight="bold" fill="#4A3380">证据裁决（配套环节）</text>
+<text x="550" y="644" text-anchor="middle" font-size="15" fill="#4A3380">校验证据的充分性 · 一致性 · 可追溯性</text>
+<text x="550" y="670" text-anchor="middle" font-size="15" fill="#4A3380">证据充分 → 输出答案　|　证据不足或冲突 → 记录缺失项、转待确认</text>
+<text x="550" y="694" text-anchor="middle" font-size="15" fill="#4A3380">四路均不可及 → 拒答（保证任意输入均有确定归宿）</text>
+<line x1="550" y1="708" x2="550" y2="736" stroke="#333" stroke-width="1.8" marker-end="url(#arw)"/>
+
+<rect x="270" y="738" width="560" height="56" rx="10" fill="#F2F4F7" stroke="#8A94A6" stroke-width="1.5"/>
+<text x="550" y="772" text-anchor="middle" font-size="18" fill="#1F2937">答案 + 支撑证据 + 可信状态</text>
+
+<path d="M 830 766 L 1070 766 L 1070 334 L 1044 334" fill="none" stroke="#E08A00" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arwo)"/>
+<text x="1064" y="560" text-anchor="end" font-size="15" fill="#8A4B00">证据不足 → 回流重取 / 降级</text>
+<text x="1064" y="582" text-anchor="end" font-size="15" fill="#8A4B00">（证据流闭环）</text>
+</svg>

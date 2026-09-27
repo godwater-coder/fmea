@@ -9,17 +9,37 @@ from typing import Any
 import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+except ImportError:
+    CORS = None
 
 load_dotenv()
 
 app = Flask(__name__, static_folder=".", static_url_path="")
-CORS(app)
+if CORS is not None:
+    CORS(app)
+
+
+@app.after_request
+def _add_cors_headers(response):
+    if CORS is None:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 FMEA_API_BASE = os.getenv("FMEA_API_BASE", "http://127.0.0.1:8080/api/v1").rstrip("/")
 FMEA_DEFAULT_CSV = os.getenv("FMEA_DEFAULT_CSV", "data/dfmea_final.csv")
 FMEA_TIMEOUT = float(os.getenv("FMEA_TIMEOUT", "90"))
 FMEA_BUILD_TIMEOUT = float(os.getenv("FMEA_BUILD_TIMEOUT", "300"))
+FMEA_STATUS_TIMEOUT = float(os.getenv("FMEA_STATUS_TIMEOUT", "2.5"))
+FRONTEND_DEBUG = (os.getenv("FRONTEND_DEBUG", "0") or "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 def _fmea_url(path: str) -> str:
@@ -43,6 +63,41 @@ def _problem_payload(title: str, detail: str, status: int) -> dict[str, Any]:
     }
 
 
+def _probe_backend() -> dict[str, Any]:
+    """Probe HTTP reachability without mutating FMEA backend state."""
+    started = time.perf_counter()
+    try:
+        response = requests.get(_fmea_url("question-answer"), timeout=FMEA_STATUS_TIMEOUT)
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        return {
+            "reachable": True,
+            "statusCode": response.status_code,
+            "latencyMs": elapsed_ms,
+            "detail": "FMEA API 已响应",
+        }
+    except requests.exceptions.Timeout:
+        return {
+            "reachable": False,
+            "statusCode": None,
+            "latencyMs": int((time.perf_counter() - started) * 1000),
+            "detail": "FMEA API 连接超时",
+        }
+    except requests.exceptions.ConnectionError:
+        return {
+            "reachable": False,
+            "statusCode": None,
+            "latencyMs": int((time.perf_counter() - started) * 1000),
+            "detail": "FMEA API 未监听",
+        }
+    except Exception as exc:
+        return {
+            "reachable": False,
+            "statusCode": None,
+            "latencyMs": int((time.perf_counter() - started) * 1000),
+            "detail": str(exc),
+        }
+
+
 def _fmea_post(path: str, payload: dict[str, Any], timeout: float | None = None) -> tuple[Any, int]:
     try:
         response = requests.post(_fmea_url(path), json=payload, timeout=timeout or FMEA_TIMEOUT)
@@ -53,7 +108,7 @@ def _fmea_post(path: str, payload: dict[str, Any], timeout: float | None = None)
             502,
         ), 502
     except requests.exceptions.Timeout:
-        return _problem_payload("FMEA 服务超时", "请求 FMEA 后端超时，请稍后重试或检查 Neo4j/OpenAI 状态。", 504), 504
+        return _problem_payload("FMEA 服务超时", "请求 FMEA 后端超时，请检查 Neo4j 与 Ollama 状态。", 504), 504
     except Exception as exc:
         return _problem_payload("代理异常", str(exc), 500), 500
 
@@ -88,6 +143,9 @@ def _normalize_answer(body: Any, status: int, elapsed_ms: int) -> tuple[dict[str
             "elapsed_ms": elapsed_ms,
             "raw": body,
         }
+        for key in ("route", "route_confidence", "missing_slots", "query_ir"):
+            if key in body:
+                normalized[key] = body[key]
         return normalized, 200
 
     return {
@@ -119,15 +177,18 @@ def serve_js(filename: str):
 
 @app.route("/api/status", methods=["GET"])
 def status():
+    backend = _probe_backend()
     return jsonify(
         {
             "ok": True,
             "app": "DFMEA KG-RAG Workbench",
             "proxy": "ready",
+            "backend": backend,
             "fmeaApiBase": FMEA_API_BASE,
             "defaultCsvPath": FMEA_DEFAULT_CSV,
             "timeoutSeconds": FMEA_TIMEOUT,
             "buildTimeoutSeconds": FMEA_BUILD_TIMEOUT,
+            "statusTimeoutSeconds": FMEA_STATUS_TIMEOUT,
         }
     )
 
@@ -210,12 +271,14 @@ def set_top_k():
 
 
 if __name__ == "__main__":
+    frontend_host = os.getenv("FRONTEND_HOST", "0.0.0.0")
+    frontend_port = int(os.getenv("FRONTEND_PORT", "5000"))
     print("=" * 64)
     print("DFMEA KG-RAG Workbench")
     print("=" * 64)
-    print("Frontend: http://localhost:5000")
+    print(f"Frontend: http://{frontend_host}:{frontend_port}")
     print(f"FMEA API: {FMEA_API_BASE}")
     print(f"Default CSV: {FMEA_DEFAULT_CSV}")
     print("Tip: start the FMEA backend with `python code/kg_rag.py` from the repository root")
     print("=" * 64)
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host=frontend_host, port=frontend_port, debug=FRONTEND_DEBUG)

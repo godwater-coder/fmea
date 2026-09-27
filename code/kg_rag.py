@@ -2,6 +2,7 @@
 
 import connexion
 from os import getenv
+from flask import request
 
 from kg_rag_core import _as_problem, _json_response
 from kg_rag_runtime import get_rag_service
@@ -94,6 +95,33 @@ if __name__ == "__main__":
     app = connexion.FlaskApp(__name__) #创建基于Flask的应用
     app.add_api("api.yml") # 加载后端接口路径
     application = app.app
+    cors_origins = (getenv("KG_RAG_CORS_ORIGINS", "*") or "*").strip()
+    if cors_origins == "*":
+        allowed_origins = ["*"]
+    else:
+        allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+
+    @application.after_request
+    def _add_cors_headers(response):
+        origin = request.headers.get("Origin")
+        if "*" in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        elif origin and origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Vary"] = "Origin"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+
+    @application.route("/<path:_any>", methods=["OPTIONS"])
+    def _options(_any):
+        return "", 204
+
+    @application.route("/", methods=["OPTIONS"])
+    def _options_root():
+        return "", 204
+
     # 让中文以 unicode 形式输出（\uXXXX），避免终端/客户端编码不一致。
     # 可通过环境变量 JSON_UNICODE_ESCAPE 控制：1/true=开启（默认），0/false=关闭。
     json_unicode_escape = (getenv("JSON_UNICODE_ESCAPE", "1") or "1").strip().lower() not in {
@@ -111,4 +139,6 @@ if __name__ == "__main__":
             application.config["JSON_AS_ASCII"] = json_unicode_escape
     except Exception:
         pass
-    app.run(port=8080)
+    host = getenv("KG_RAG_HOST", "0.0.0.0") or "0.0.0.0"
+    port = int(getenv("KG_RAG_PORT", "8080") or "8080")
+    app.run(host=host, port=port)

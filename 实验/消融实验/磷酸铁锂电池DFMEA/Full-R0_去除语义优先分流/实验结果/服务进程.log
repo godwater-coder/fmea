@@ -1,0 +1,592 @@
+`ConnexionMiddleware.run` is optimized for development. For production, run using a dedicated ASGI server.
+INFO:     Started server process [163870]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8092 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57620 - "POST /api/v1/set-top_k HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57636 - "POST /api/v1/set-top_k HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57652 - "POST /api/v1/clear-fmea-graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57662 - "POST /api/v1/create-fmea-graph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57674 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57684 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:57686 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57692 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57696 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57708 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57714 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57720 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57732 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57742 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57754 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57758 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57760 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57768 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:57780 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57782 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57798 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:57802 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57804 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57812 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:57824 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57830 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57838 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57852 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57856 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57862 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57876 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57878 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57888 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57904 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57906 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57912 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57928 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57932 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:57940 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39210 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39224 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39232 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39240 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39254 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39258 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39270 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39284 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39298 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39300 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39302 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39308 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39320 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39326 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39328 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39340 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39346 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39348 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39354 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39356 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39370 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39386 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39398 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39404 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39408 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39410 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39426 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39440 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39448 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39458 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39462 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39474 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39484 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39486 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39490 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39506 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39510 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39524 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39532 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39540 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39554 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39568 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39572 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39580 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39596 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39606 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39614 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39616 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39624 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39632 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39636 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39640 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39656 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39664 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39674 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39676 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39682 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39686 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39694 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39698 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39700 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39714 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39720 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39728 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39734 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:39740 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37646 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37654 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37664 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37676 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37686 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37688 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37690 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37706 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37716 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37724 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37740 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37752 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37766 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37782 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37796 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37812 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37816 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37832 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37838 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37852 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37864 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37876 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37886 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37896 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37902 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37918 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37928 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37940 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37946 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37952 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37966 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37970 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37976 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37988 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38000 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38008 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38016 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38026 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38042 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38044 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38046 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38058 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38070 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38086 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38092 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38102 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38110 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38126 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38138 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38148 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38156 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38172 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38184 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38194 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38206 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38220 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38236 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38240 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38250 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38262 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38268 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38284 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38300 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38308 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38322 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38334 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38338 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38342 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:38346 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36434 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36448 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36460 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36462 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36478 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36480 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36492 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36506 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36508 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36516 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36532 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36538 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36544 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36558 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36572 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36574 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36576 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36578 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36586 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36590 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36596 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36608 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36612 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36614 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36628 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36634 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36642 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36646 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36654 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36656 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36666 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36674 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36678 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36692 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36696 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36708 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36712 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36724 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36740 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36752 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36754 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36760 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36766 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36782 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36790 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36800 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36804 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36808 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36814 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36816 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36818 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36832 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36844 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36854 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36868 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36876 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36890 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36896 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36912 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:36914 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36928 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36944 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36950 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36966 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36982 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36994 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37010 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37018 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37026 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37032 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37034 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37040 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37048 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37050 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37052 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37058 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37070 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37028 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37044 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37060 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37064 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37072 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37080 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37092 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37096 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37108 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37124 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37134 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37142 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37148 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37150 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37156 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37160 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37162 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37170 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37176 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37180 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37196 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37206 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37212 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37214 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37226 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37240 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37248 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37252 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37260 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37272 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37276 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37280 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37286 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37296 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37302 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37318 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37324 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37340 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37342 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37348 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37350 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37360 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37368 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37370 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37374 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37384 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37388 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37394 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37404 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37406 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37418 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37428 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37440 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37446 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37454 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37466 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37480 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37490 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37504 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37518 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37524 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37530 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37542 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37558 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37570 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37580 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37584 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37598 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37602 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37612 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37626 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37640 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37648 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:37650 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59612 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59626 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59628 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59644 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59654 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59656 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59670 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59680 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59684 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59690 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59692 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59708 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59720 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59730 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59732 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59736 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59746 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59750 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59762 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59770 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59774 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59788 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59798 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59814 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59824 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59838 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59850 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59864 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59878 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59880 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59894 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59904 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59906 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59922 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59938 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59950 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59964 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59974 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59978 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59994 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60004 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60006 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60008 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60024 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60026 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60038 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60070 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60080 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60086 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60100 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60116 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60126 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60128 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60130 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60132 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60136 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60138 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60152 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60162 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60166 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60170 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60186 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60188 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60194 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60196 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60202 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60214 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60226 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60242 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60258 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60262 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60272 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60278 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60290 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60296 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60310 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60316 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60324 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60332 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59716 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59732 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59748 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59760 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59768 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59784 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59788 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59802 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59814 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59824 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59828 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59836 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59842 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59852 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59858 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59862 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59870 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59878 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59882 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59886 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59890 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59894 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59898 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59900 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59912 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59916 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59926 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:59942 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59946 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59958 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59968 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59970 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59974 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59982 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59990 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59998 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60006 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60008 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60022 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60030 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60032 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60036 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60050 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60060 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60074 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60088 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60094 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60100 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60114 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60130 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60140 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60152 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60164 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60178 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60190 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60202 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60208 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60220 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60230 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60244 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60260 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60262 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60270 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60282 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60292 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60308 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60314 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60316 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60322 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60338 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60340 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60356 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60362 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60378 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60386 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60396 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60404 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60412 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60428 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60438 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60442 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60448 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60460 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60472 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60482 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.FeatureDeprecationWarning} {category: DEPRECATION} {title: This feature is deprecated and will be removed in future versions.} {description: The query used a deprecated procedure. ('db.index.vector.queryNodes' has been replaced by 'SEARCH')} {position: line: 1, column: 1, offset: 0} for query: 'CALL db.index.vector.queryNodes($index, $k, $embedding) YIELD node, score RETURN node.`text` AS text, score, node {.*, `text`: Null, `embedding`: Null, id: Null } AS metadata'
+INFO:     127.0.0.1:60484 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54798 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54812 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54830 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54846 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54860 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54870 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54884 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54894 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54896 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54910 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54918 - "POST /api/v1/question-answer HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [163870]

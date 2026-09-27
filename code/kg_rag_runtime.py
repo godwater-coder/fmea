@@ -64,7 +64,7 @@ def get_rag_service() -> KGRAGService:
         return _rag_service
 
     with _rag_service_lock:
-        if _rag_service is not None:
+        if _rag_service is not None: 
             return _rag_service
         if _rag_service_init_error is not None:
             raise RuntimeError(_format_neo4j_init_error(_rag_service_init_error))

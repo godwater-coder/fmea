@@ -1,0 +1,34 @@
+{
+  "Zenodo主实验实验臂数": 11,
+  "电池主实验实验臂数": 11,
+  "Zenodo专项实验臂数": 12,
+  "电池专项实验臂数": 12,
+  "重复实验结果数": 6,
+  "题集槽位标注": {
+    "DATA/zenodo_floating_wind_fmea/module_eval/special_all_400_questions.jsonl": {
+      "题数": 400,
+      "含expected_intent": 400,
+      "含expected_entities": 284,
+      "含should_reject": 0
+    },
+    "DATA/zenodo_floating_wind_fmea/scenario_qa_no_id/all_scenario_no_id_1500_questions.jsonl": {
+      "题数": 1500,
+      "含expected_intent": 1500,
+      "含expected_entities": 1000,
+      "含should_reject": 0
+    },
+    "DATA/磷酸铁锂电池Dfmea分析/eval/lfp_dfmea_500_questions.jsonl": {
+      "题数": 500,
+      "含expected_intent": 500,
+      "含expected_entities": 500,
+      "含should_reject": 0
+    },
+    "DATA/磷酸铁锂电池Dfmea分析/module_eval/lfp_module_special_200_questions.jsonl": {
+      "题数": 200,
+      "含expected_intent": 200,
+      "含expected_entities": 80,
+      "含should_reject": 10
+    }
+  },
+  "通过": true
+}
